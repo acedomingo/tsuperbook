@@ -1,0 +1,21 @@
+
+# Gets more details on each transit route
+
+query Route($route_id: String!){
+    route(id:$route_id) {
+        longName
+        stops {
+            name
+            routes {
+                gtfsId
+                longName
+            }
+        }
+        trips {
+            tripGeometry {
+                length
+                points
+            }
+        }
+    }
+}

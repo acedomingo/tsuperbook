@@ -1,0 +1,14 @@
+query nearbyRoutes($lat: Float!, $lon: Float!) {
+    stopsByRadius(lat: $lat, lon: $lon, radius: 500){
+        edges {
+            node {
+                stop {
+                    routes {
+                        longName
+                        gtfsId
+                    }
+                }
+            }
+        }
+    }
+}

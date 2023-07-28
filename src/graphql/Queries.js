@@ -1,5 +1,7 @@
 import { gql } from "@apollo/client";
 
+
+
 export const GET_ROUTES = gql `
 # Gets the information on all transit routes from OTP
     query getRoutes {
@@ -34,13 +36,18 @@ query Route($route_id: String!){
 
 export const NEARBY_ROUTES = gql `
 query nearbyRoutes($lat: Float!, $lon: Float!) {
-    stopsByRadius(lat: $lat, lon: $lon, radius: 500){
+    stopsByRadius(lat: $lat, lon: $lon, radius: 1000){
         edges {
             node {
                 stop {
                     routes {
                         longName
                         gtfsId
+                        trips {
+                            tripGeometry {
+                            points
+                            }
+                        }
                     }
                 }
             }

@@ -1,9 +1,11 @@
 // packages
 import React, { useState, useEffect } from 'react';
-import { Map, NavigationControl, Marker } from 'react-map-gl';
+import { Map, NavigationControl, Marker, Layer, Source  } from 'react-map-gl';
 import { useLazyQuery } from '@apollo/client';
 import { NEARBY_ROUTES } from './graphql/Queries';
 import Popup from 'reactjs-popup';
+import polyline from '@mapbox/polyline';
+import * as turf from '@turf/turf';
 // -----------------------------
 
 // Main Website
@@ -39,6 +41,19 @@ const App = () => {
     return false;
   });
 
+  // Function to convert trip geometry points to a LineString
+  const createLineStringFromPoints = (points) => {
+    // Decode the polyline string into an array of coordinate objects
+    const decodedPoints = polyline.decode(points);
+    return {
+      type: 'Feature',
+      geometry: {
+        type: 'LineString',
+        coordinates: decodedPoints.map((point) => [point[1], point[0]]),
+      },
+    };
+  };
+
   console.log(routes);
 
   async function handleClick(event) { // on double click
@@ -73,6 +88,28 @@ const App = () => {
     >
       <NavigationControl showCompass={false} />
       <Marker latitude={latitude} longitude={longitude}></Marker>
+
+       {/* Displaying nearby routes as polylines using Layers */}
+       {allRoutes.map((route) =>
+          route.trips.map((trip) => {
+            const tripLineString = createLineStringFromPoints(trip.tripGeometry.points);
+            return (
+              <Source key={`${route.gtfsId}-${trip.tripGeometry.points[0].id}`} type="geojson" data={tripLineString}>
+                <Layer
+                  id={`${route.gtfsId}-${trip.tripGeometry.points[0].id}`}
+                  type="line"
+                  source={tripLineString}
+                  paint={{
+                    'line-color': 'teal',
+                    'line-width': 2,
+                    'line-opacity': 0.7,
+                  }}
+                />
+              </Source>
+            );
+          })
+        )}
+      
     </Map>
   
     {/* Popup that displays the nearby routes */}

@@ -8,9 +8,33 @@ import polyline from '@mapbox/polyline';
 import * as turf from '@turf/turf';
 // -----------------------------
 
-// Main Website
+// importing routes
+import PUB1 from './routes/LTFRB_PUB0001.geojson';
+import PUB2 from './routes/LTFRB_PUB0002.geojson';
+import PUB3 from './routes/LTFRB_PUB0003.geojson';
+import PUB4 from './routes/LTFRB_PUB0004.geojson';
+import PUJ1 from './routes/LTFRB_PUJ0001.geojson';
+import PUJ2 from './routes/LTFRB_PUJ0002.geojson';
+import PUJ3 from './routes/LTFRB_PUJ0003.geojson';
+import PUJ4 from './routes/LTFRB_PUJ0004.geojson';
+import PUJ5 from './routes/LTFRB_PUJ0005.geojson';
+import PUJ6 from './routes/LTFRB_PUJ0006.geojson';
 
 const App = () => {
+
+  // initializing routes
+  const routeDataMap = {
+    LTFRB_PUB0001: PUB1,
+    LTFRB_PUB0002: PUB2,
+    LTFRB_PUB0003: PUB3,
+    LTFRB_PUB0004: PUB4,
+    LTFRB_PUJ0001: PUJ1,
+    LTFRB_PUJ0002: PUJ2,
+    LTFRB_PUJ0003: PUJ3,
+    LTFRB_PUJ0004: PUJ4,
+    LTFRB_PUJ0005: PUJ5,
+    LTFRB_PUJ0006: PUJ6,
+  };
 
   // initial settings
   const [settings, setsettings] = useState({
@@ -29,6 +53,8 @@ const App = () => {
   if (error) return <p>Error: {error.message}</p>;
 
   const allRoutes = data?.stopsByRadius?.edges?.flatMap((edge) => edge?.node?.stop?.routes) || []; // all of the routes
+  
+  console.log(allRoutes);
 
   const uniqueRoutesSet = new Set();
 
@@ -40,20 +66,7 @@ const App = () => {
     }
     return false;
   });
-
-  // Function to convert trip geometry points to a LineString
-  const createLineStringFromPoints = (points) => {
-    // Decode the polyline string into an array of coordinate objects
-    const decodedPoints = polyline.decode(points);
-    return {
-      type: 'Feature',
-      geometry: {
-        type: 'LineString',
-        coordinates: decodedPoints.map((point) => [point[1], point[0]]),
-      },
-    };
-  };
-
+  
   console.log(routes);
 
   async function handleClick(event) { // on double click
@@ -90,25 +103,23 @@ const App = () => {
       <Marker latitude={latitude} longitude={longitude}></Marker>
 
        {/* Displaying nearby routes as polylines using Layers */}
-       {allRoutes.map((route) =>
-          route.trips.map((trip) => {
-            const tripLineString = createLineStringFromPoints(trip.tripGeometry.points);
-            return (
-              <Source key={`${route.gtfsId}-${trip.tripGeometry.points[0].id}`} type="geojson" data={tripLineString}>
-                <Layer
-                  id={`${route.gtfsId}-${trip.tripGeometry.points[0].id}`}
-                  type="line"
-                  source={tripLineString}
-                  paint={{
-                    'line-color': 'teal',
-                    'line-width': 2,
-                    'line-opacity': 0.7,
-                  }}
-                />
-              </Source>
-            );
-          })
-        )}
+       {routes.map((route) => {
+        const cleanGtfsId = route.gtfsId.slice(2);
+        const geojsonData = routeDataMap[cleanGtfsId];
+        
+        return (
+          <Source key={cleanGtfsId} type="geojson" data={geojsonData}>
+            <Layer 
+              type="line" 
+              source={cleanGtfsId} 
+              paint={{
+                'line-color': `#${route.color}`,
+                'line-width': 2,
+                'line-opacity': 0.7,
+              }} />
+          </Source>
+        );
+      })}
       
     </Map>
   

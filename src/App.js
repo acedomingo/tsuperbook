@@ -1,11 +1,9 @@
 // packages
-import React, { useState, useEffect } from 'react';
-import { Map, NavigationControl, Marker, Layer, Source  } from 'react-map-gl';
+import React, { useState } from 'react';
+import { Map, NavigationControl, Marker, Layer, Source } from 'react-map-gl';
 import { useLazyQuery } from '@apollo/client';
 import { NEARBY_ROUTES } from './graphql/Queries';
-import Popup from 'reactjs-popup';
-import polyline from '@mapbox/polyline';
-import * as turf from '@turf/turf';
+import './App.css';
 // -----------------------------
 
 // importing routes
@@ -37,7 +35,7 @@ const App = () => {
   };
 
   // initial settings
-  const [settings, setsettings] = useState({
+  const [settings] = useState({
     touchZoom: false,
     doubleClickZoom: false
     });
@@ -47,27 +45,21 @@ const App = () => {
   const [latitude, setLatitude] = useState("")
   const [longitude, setLongitude] = useState("")
   const [showPopup, setShowPopup] = useState(false);
-  const [noRoutes, setNoRoutes] = useState(false);
-  const [getNearbyRoutes, { error, data }] = useLazyQuery(NEARBY_ROUTES, {variables: {lat: latitude, lon: longitude}});
-
-  if (error) return <p>Error: {error.message}</p>;
-
-  const allRoutes = data?.stopsByRadius?.edges?.flatMap((edge) => edge?.node?.stop?.routes) || []; // all of the routes
+  const [highlightedRouteGeoJson, setHighlightedRouteGeoJson] = useState(null); // hover over a route
   
-  console.log(allRoutes);
-
+  const [getNearbyRoutes, { loading, error, data }] = useLazyQuery(NEARBY_ROUTES, {variables: {lat: latitude, lon: longitude}});
+  if (error) return <p>Error: {error.message}</p>;
+  
+  const allRoutes = data?.stopsByRadius?.edges?.flatMap((edge) => edge?.node?.stop?.routes) || [];   
   const uniqueRoutesSet = new Set();
-
-  // Filter out duplicates using the 'longName' property as the identifier
-  const routes = allRoutes.filter((route) => {
+  
+  const routes = allRoutes.filter((route) => {   // filter out duplicates using the 'longName' property as the identifier
     if (!uniqueRoutesSet.has(route.longName)) {
       uniqueRoutesSet.add(route.longName);
       return true;
     }
     return false;
   });
-  
-  console.log(routes);
 
   async function handleClick(event) { // on double click
     const coords = event.lngLat; // gets the coordinates of clicked location
@@ -75,19 +67,29 @@ const App = () => {
     setLatitude(coords.lat);
     await getNearbyRoutes() // requests query
     console.log(coords);
-
-    if (routes.length <= 0)
-      setNoRoutes(true);
-    else
-      setNoRoutes(false);
-
     setShowPopup(true);
   }
   
   // -----------------------------------------------------------
+  
+  const handleRouteNameMouseEnter = (route) => { // when a nearby route is hovered, the route is highlighted on the map
+    const cleanGtfsId = route.gtfsId.slice(2);
+    const geojsonData = routeDataMap[cleanGtfsId];
+    setHighlightedRouteGeoJson(geojsonData);
+  };
+
+  const handleRouteNameMouseLeave = () => { // removes highlighted route
+    setHighlightedRouteGeoJson(null);
+  };
+
+  const handleClosePopup = () => { // close nearby route popup
+    setShowPopup(false);
+  };
+
   return (
     <>
     <Map
+      id="map"
       {...settings}
       style={{ width: window.innerWidth, height: window.innerHeight }}
       initialViewState={{
@@ -100,60 +102,58 @@ const App = () => {
       onDblClick={handleClick}
     >
       <NavigationControl showCompass={false} />
-      <Marker latitude={latitude} longitude={longitude}></Marker>
+      
+      {showPopup && (
+        <Marker latitude={latitude} longitude={longitude}></Marker>
+      )}
 
        {/* Displaying nearby routes as polylines using Layers */}
        {routes.map((route) => {
         const cleanGtfsId = route.gtfsId.slice(2);
         const geojsonData = routeDataMap[cleanGtfsId];
         
-        return (
-          <Source key={cleanGtfsId} type="geojson" data={geojsonData}>
-            <Layer 
-              type="line" 
-              source={cleanGtfsId} 
-              paint={{
-                'line-color': `#${route.color}`,
-                'line-width': 2,
-                'line-opacity': 0.7,
-              }} />
-          </Source>
-        );
-      })}
-      
-    </Map>
-  
-    {/* Popup that displays the nearby routes */}
-    <Popup
-      open={showPopup}
-      onClose={() => setShowPopup(false)}
-      position="bottom left"
-      contentStyle={{
-        background: 'white',
-        width: '400px',
-        padding: '20px',
-        borderRadius: '4px',
-        boxShadow: '0 0 10px rgba(0, 0, 0, 0.3)',
-        textAlign: 'left',
-        position: 'fixed',
-        left: '20px',
-        bottom: '20px'
-      }}
-    >
-      <div>
-        <h1>Nearby Routes:</h1>
-        { noRoutes ? (
-            <p>There are no nearby routes.</p>
-            ) : (
-              <ul>
-              {routes.map((route) => (
-                <li key={route.gtfsId}>{route.longName}</li>
-              ))}
-              </ul> 
-            )
+        if (showPopup) {
+          return (
+            <Source key={cleanGtfsId} type="geojson" data={geojsonData}>
+              <Layer 
+                type="line" 
+                paint={{
+                  'line-color': highlightedRouteGeoJson === geojsonData ? 'purple' : `#${route.color}`,
+                  'line-width': highlightedRouteGeoJson === geojsonData ? 4 : 2,
+                  'line-opacity':  highlightedRouteGeoJson && highlightedRouteGeoJson !== geojsonData ? 0.15 : 0.7,
+                }} />
+            </Source>
+          );
+        } else {
+          return null;
         }
+      })}
+    </Map>
+    
+    {/* List of nearby routes (Popup) */}
+    {showPopup && (
+      <div className="popup">
+        <button className="close-button" onClick={handleClosePopup}> X </button>
+        <h1>Nearby Routes:</h1>
+        { loading ? (<p>Fetching nearby routes....</p>) : (null)}
+        {routes.length <= 0 && !loading ? (
+          <p>There are no nearby routes.</p>
+         ) : (
+          <ul>
+            {routes.map((route) => (
+              <li
+                key={route.gtfsId}
+                className="routeName"
+                onMouseEnter={() => handleRouteNameMouseEnter(route)}
+                onMouseLeave={handleRouteNameMouseLeave}
+              >
+              {route.longName}
+              </li>
+          ))}
+          </ul>
+        )}
       </div>
-    </Popup> 
+    )}
     </>
   );
 }

@@ -4,6 +4,8 @@ import { Map, NavigationControl, Marker, Layer, Source } from 'react-map-gl';
 import { useLazyQuery } from '@apollo/client';
 import { NEARBY_ROUTES } from './graphql/Queries';
 import './App.css';
+import Sidebar from "./components/Sidebar";
+
 // -----------------------------
 
 // importing routes
@@ -88,6 +90,12 @@ const App = () => {
 
   return (
     <>
+    <div className="Display">
+    <div className="App">
+      <Sidebar />
+    </div>
+
+    <div id="mapbox">
     <Map
       id="map"
       {...settings}
@@ -129,7 +137,9 @@ const App = () => {
         }
       })}
     </Map>
-    
+    </div>
+    </div>
+
     {/* List of nearby routes (Popup) */}
     {showPopup && (
       <div className="popup">

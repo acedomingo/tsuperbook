@@ -1,6 +1,7 @@
 .App {
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
+  float: left;
 }
 
 body {
@@ -8,20 +9,31 @@ body {
   padding: 0;
 }
 
+.Display {
+  display: flex;
+}
+
+.Display #mapbox {
+  flex: 1;
+  position: relative;
+}
+
 .Sidebar {
-  display: inline-block;
+  display: absolute;
+  float: left;
   height: 100%;
   width: 200px;
 }
 
 .SidebarList {
-  height: auto;
+  height: 100%;
   width: 100%;
   padding: 0;
+  margin: 0;
   background-color: #2f4050;
 }
 
-.SidebarList .row {
+.SidebarList .Row {
   width: 100%;
   height: 60px;
   list-style-type: none;
@@ -32,7 +44,7 @@ body {
   align-items: center;
 }
 
-.SidebarList .row:hover{
+.SidebarList .Row:hover{
   cursor: pointer;
   background-color: blue;
 }
@@ -41,11 +53,11 @@ body {
   background-color: yellow;
 }
 
-.row #icon {
+.Row #icon {
   flex: 30%;
   place-items: center;
 }
 
-.row #title {
+.Row #title {
   flex: 70%;
 }

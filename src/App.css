@@ -20,9 +20,8 @@ body {
 
 .Sidebar {
   display: absolute;
-  float: left;
   height: 100%;
-  width: 200px;
+  width: 225px;
 }
 
 .SidebarList {
@@ -35,7 +34,7 @@ body {
 
 .SidebarList .Row {
   width: 100%;
-  height: 60px;
+  height: 80px;
   list-style-type: none;
   margin: 0;
   display: flex;
@@ -56,8 +55,9 @@ body {
 .Row #icon {
   flex: 30%;
   place-items: center;
+  margin-left: 30px;
 }
 
 .Row #title {
-  flex: 70%;
+  flex: 80%;
 }

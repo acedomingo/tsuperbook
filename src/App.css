@@ -61,3 +61,66 @@ body {
 .Row #title {
   flex: 80%;
 }
+
+.routeName:hover {
+  color: teal;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.popup {
+  background: white;
+  width: 350px;
+  padding: 20px;
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  border-radius: 20px;
+  box-shadow: 0 4px 5px rgba(0, 0, 0, 0.2);
+}
+
+.close-button {
+  position: absolute;
+  top: 5%; 
+  right: 0%; 
+  width: 10%;
+  height: 10%;
+  cursor: pointer;
+  color: #000000; 
+  text-align: center;
+  line-height: 20px;
+}
+
+.path-finding {
+  position: absolute;
+  top: 2.5%;
+  left: 1%;
+  cursor: pointer;
+  background-color: #FFC133;
+  border: none;
+  border-radius: 100%;
+  box-shadow: 0 4px 5px rgba(0, 0, 0, 0.2);
+  padding: 5px;
+}
+
+.origDest {
+  background: white;
+  width: 80%;
+  padding: 1%;
+  position: absolute;
+  left: 7%;
+  bottom: 40%;
+  border-radius: 20px;
+  box-shadow: 0 4px 5px rgba(0, 0, 0, 0.2);
+}

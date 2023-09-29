@@ -2,9 +2,13 @@ import React from 'react'
 import "../App.css";
 import {SidebarData} from './SidebarData';
 
-function Sidebar() {
+const Sidebar = ({ onClose }) => {
+    const handleClose = () => {
+      onClose();
+    }
     return (
         <div className="Sidebar">
+            <div style={{ height: 46 }} />
             <ul className="SidebarList">
             {SidebarData.map((val,key)=> {
                 return (
@@ -26,6 +30,7 @@ function Sidebar() {
             })}
             </ul>
         </div>
+        
     )
 }
 

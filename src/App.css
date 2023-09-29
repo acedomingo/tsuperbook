@@ -18,10 +18,52 @@ body {
   position: relative;
 }
 
+.MenuButton {
+  padding: 0;
+  border: 0;
+  background: 0;
+  font-size: 40px;
+}
+
+.Navbar {
+  background-color: #FFC133;
+  width: 100%;
+  color: white;
+  display: flex;
+  position: fixed;
+  z-index: 1000;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+  padding: 0 1rem;
+  overflow: hidden;
+}
+
+.NavbarTitle {
+  font-size: 2rem;
+}
+
+.Navbar ul {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  display: flex;
+  gap: 1rem;
+}
+
+.Navbar a {
+  color: inherit;
+  text-decoration: none;
+}
+
 .Sidebar {
-  display: absolute;
-  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 225px;
+  height: 100vh;
+  overflow: hidden;
+  z-index: 2;
 }
 
 .SidebarList {
@@ -29,7 +71,7 @@ body {
   width: 100%;
   padding: 0;
   margin: 0;
-  background-color: #2f4050;
+  background-color: #FFC133;
 }
 
 .SidebarList .Row {
@@ -45,11 +87,11 @@ body {
 
 .SidebarList .Row:hover{
   cursor: pointer;
-  background-color: blue;
+  background-color: #FFD133;
 }
 
 .SidebarList #active {
-  background-color: yellow;
+  background-color: #FFE133;
 }
 
 .Row #icon {
@@ -84,10 +126,12 @@ body {
   width: 350px;
   padding: 20px;
   position: fixed;
-  left: 20px;
+  right: 20px;
   bottom: 20px;
   border-radius: 20px;
   box-shadow: 0 4px 5px rgba(0, 0, 0, 0.2);
+  z-index: 2;
+  float: left;
 }
 
 .close-button {

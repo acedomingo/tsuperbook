@@ -7,11 +7,6 @@ import HelpIcon from '@mui/icons-material/Help';
 
 export const SidebarData = [
     {
-        title: "Froutey",
-        icon: <MenuIcon />,
-        link: "/home",
-    },
-    {
         title: "Bus Routes",
         icon: <DirectionsBusIcon />,
         link: "/busroutes",

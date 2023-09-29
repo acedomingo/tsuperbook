@@ -5,6 +5,7 @@ import { useLazyQuery } from '@apollo/client';
 import { NEARBY_ROUTES } from './graphql/Queries';
 import './App.css';
 import Sidebar from "./components/Sidebar";
+import Navbar from "./components/Navbar";
 
 // -----------------------------
 
@@ -48,7 +49,8 @@ const App = () => {
   const [longitude, setLongitude] = useState("")
   const [showPopup, setShowPopup] = useState(false);
   const [highlightedRouteGeoJson, setHighlightedRouteGeoJson] = useState(null); // hover over a route
-  
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   const [getNearbyRoutes, { loading, error, data }] = useLazyQuery(NEARBY_ROUTES, {variables: {lat: latitude, lon: longitude}});
   if (error) return <p>Error: {error.message}</p>;
   
@@ -58,6 +60,7 @@ const App = () => {
   const routes = allRoutes.filter((route) => {   // filter out duplicates using the 'longName' property as the identifier
     if (!uniqueRoutesSet.has(route.longName)) {
       uniqueRoutesSet.add(route.longName);
+      console.log(allRoutes);
       return true;
     }
     return false;
@@ -88,11 +91,17 @@ const App = () => {
     setShowPopup(false);
   };
 
+  const handleSidebarToggle = () => { // toggles sidebar
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
   return (
     <>
     <div className="Display">
+    
     <div className="App">
-      <Sidebar />
+    <Navbar onSidebarToggle={handleSidebarToggle} />
+      {isSidebarOpen && <Sidebar onClose={handleSidebarToggle}/>}
     </div>
 
     <div id="mapbox">
@@ -109,7 +118,6 @@ const App = () => {
       mapStyle="mapbox://styles/mapbox/light-v11"
       onDblClick={handleClick}
     >
-      <NavigationControl showCompass={false} />
       
       {showPopup && (
         <Marker latitude={latitude} longitude={longitude}></Marker>

@@ -16,7 +16,11 @@ const Sidebar = ({ onClose }) => {
                     className="Row"
                     id={window.location.pathname == val.link ? "active" : ""}
                     onClick={()=> {
-                        window.location.pathname = val.link
+                        if (val.external) {
+                            window.open(val.link, "_blank"); } // Open external links in a new tab
+                        else {
+                            window.location.pathname = val.link;
+                            }
                     }}
                 > 
                     <div id="icon">

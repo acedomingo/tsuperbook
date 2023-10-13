@@ -1,7 +1,7 @@
 .App {
   width: 100vw;
   height: 100vh;
-  float: left;
+  /*float: left;*/
 }
 
 body {
@@ -11,6 +11,18 @@ body {
 
 .Display {
   display: flex;
+  width: 100vw;
+  height: 100vh;
+}
+
+.Content {
+  display: flex;
+  align-items: flex-start; /* Align content to the top of the screen */
+  height: 100vh; /* Set height to 100% of viewport height */
+  width: 100%; /* Set width to 100% */
+  overflow: auto; /* Add scrolling if content overflows the screen */
+  margin: 0; /* Remove any margin that might be causing gaps */
+  padding: 0; /* Remove any padding */
 }
 
 .Display #mapbox {
@@ -110,19 +122,36 @@ body {
 }
 */
 
-.Tile {
-  background-color: #ffffffb6;
-  padding: 16px;
-  border: 1px solid #000000;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin: 16px;
-}
-
 .TileGrid {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
+  padding-top: 3%;
+  width: 100%;
+  margin: 0px; /* Remove margin */
+}
+
+
+.Tile {
+  background-color: #ffffffb6;
+  padding: 10px;
+  margin: 20px; 
+  margin-bottom: 10px;
+  border: 1px solid #000000;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: calc(30%); 
+  height: 200px; /* Set the desired height for the tiles */
+  display: flex;
+  flex-direction: column; /* Ensure content starts from the top */
+}
+
+.Tile h2 {
+ margin: 0;
+}
+
+.Tile p {
+  margin: 0;
 }
 
 .Row #icon {

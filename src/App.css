@@ -26,17 +26,18 @@ body {
 }
 
 .Navbar {
-  background-color: #FFC133;
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
+  z-index: 1000;
+  background-color: #FFC133;
   color: white;
   display: flex;
-  position: fixed;
-  z-index: 1000;
   justify-content: space-between;
   align-items: center;
   gap: 2rem;
   padding: 0 1rem;
-  overflow: hidden;
 }
 
 .NavbarTitle {
@@ -92,6 +93,36 @@ body {
 
 .SidebarList #active {
   background-color: #FFE133;
+}
+
+/*
+
+.Content.shifted {
+  margin-left: 225px; /* Adjust this value according to your sidebar's width 
+}
+
+.shifted {
+  margin-left: 225px; /* shifts content when sidebar is opened 
+}
+
+.App.shifted {
+  margin-left: 0; /* Reset the margin for the content when sidebar is open 
+}
+*/
+
+.Tile {
+  background-color: #ffffffb6;
+  padding: 16px;
+  border: 1px solid #000000;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin: 16px;
+}
+
+.TileGrid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
 }
 
 .Row #icon {

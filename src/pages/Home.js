@@ -6,6 +6,7 @@ import { NEARBY_ROUTES } from '../graphql/Queries';
 import '../App.css';
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
+import RouteData from "../components/RouteData";
 
 // -----------------------------
 
@@ -50,6 +51,8 @@ const Home = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [highlightedRouteGeoJson, setHighlightedRouteGeoJson] = useState(null); // hover over a route
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [selectedRoute, setSelectedRoute] = useState(null);
+  const [landmarks, setLandmarks] = useState([]);
 
   const [getNearbyRoutes, { loading, error, data }] = useLazyQuery(NEARBY_ROUTES, {variables: {lat: latitude, lon: longitude}});
   if (error) return <p>Error: {error.message}</p>;
@@ -74,6 +77,24 @@ const Home = () => {
     console.log(coords);
     setShowPopup(true);
   }
+
+  const handleListItemClick = (route) => { // Get the RouteData item that matches the route name.
+    const routeDataItem = RouteData.find((item) => item.name === route.longName);
+    setSelectedRoute(routeDataItem);
+    setLandmarks(routeDataItem.landmarks);
+
+    if (routeDataItem) { // If there is a matching RouteData item, display all of its landmarks.
+      const landmarks = routeDataItem.landmarks;
+      console.log(landmarks.length);
+  
+      console.log(`Landmarks for ${route.longName}:`); // Display the landmarks in a list.
+      landmarks.forEach((landmark) => {
+        console.log(`- ${landmark.name}`);
+      });
+    } else {
+      console.log(`No Landmarks found for ${route.longName}.`);
+    }
+  };
   
   // -----------------------------------------------------------
   
@@ -89,6 +110,8 @@ const Home = () => {
 
   const handleClosePopup = () => { // close nearby route popup
     setShowPopup(false);
+    setSelectedRoute(null);
+    setLandmarks([]);
   };
 
   const handleSidebarToggle = () => { // toggles sidebar
@@ -157,11 +180,12 @@ const Home = () => {
         {routes.length <= 0 && !loading ? (
           <p>There are no nearby routes.</p>
          ) : (
-          <ul>
+          <ul>         
             {routes.map((route) => (
               <li
                 key={route.gtfsId}
                 className="routeName"
+                onClick={() => handleListItemClick(route)}
                 onMouseEnter={() => handleRouteNameMouseEnter(route)}
                 onMouseLeave={handleRouteNameMouseLeave}
               >
@@ -170,8 +194,25 @@ const Home = () => {
           ))}
           </ul>
         )}
+
+        {selectedRoute && (
+            <>
+              <h3>Landmarks for {selectedRoute.name}:</h3>
+              <ul>
+                {selectedRoute?.landmarks?.length > 0 ? (
+                  selectedRoute.landmarks.map((landmark) => (
+                    <li key={landmark.id}>
+                      {landmark.name}
+                    </li>
+                ))
+                ) : (
+                <p>No landmarks found for {selectedRoute.name}.</p>
+              )}
+              </ul>
+            </>
+          )}                   
       </div>
-    )}
+    )}   
     </>
   );
 }

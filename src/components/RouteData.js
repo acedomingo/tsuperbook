@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const RouteData = [
+const RouteData = [
       {
         id: "PUB00001",
         name: "QC Hall - Cubao",
@@ -152,7 +152,7 @@ export const RouteData = [
 
       {
         id: "PUJ00001",
-        name: "Aurora/Lauan - Quezon Memorial Circle",
+        name: "Aurora/Lauan - QMC",
         landmarks: [
           {
             id: 1,
@@ -183,7 +183,7 @@ export const RouteData = [
 
       {
         id: "PUJ00002",
-        name: "EDSA/North Ave. - Proj 6",
+        name: "EDSA/North Ave. - Project 6",
         landmarks: [
           {
             id: 2,
@@ -237,7 +237,7 @@ export const RouteData = [
 
       {
         id: "PUJ00004",
-        name: "Proj 2 and 3 - Welcome Rotonda",
+        name: "Proj 2&3 - Welcome Rotonda",
         landmarks: [
           {
             id: 12,
@@ -360,3 +360,5 @@ export const RouteData = [
         ]
       }
     ]
+
+export default RouteData

@@ -76,6 +76,8 @@ const Home = () => {
     await getNearbyRoutes() // requests query
     console.log(coords);
     setShowPopup(true);
+    setSelectedRoute(null);
+    setLandmarks([]);
   }
 
   const handleListItemClick = (route) => { // Get the RouteData item that matches the route name.
@@ -197,7 +199,7 @@ const Home = () => {
 
         {selectedRoute && (
             <>
-              <h3>Landmarks for {selectedRoute.name}:</h3>
+              <h3>Landmarks for {selectedRoute.name} ({selectedRoute.type}):</h3>
               <ul>
                 {selectedRoute?.landmarks?.length > 0 ? (
                   selectedRoute.landmarks.map((landmark) => (
@@ -210,9 +212,10 @@ const Home = () => {
               )}
               </ul>
             </>
-          )}                   
+          )}                                    
       </div>
-    )}   
+    )} 
+  
     </>
   );
 }

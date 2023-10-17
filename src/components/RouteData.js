@@ -4,6 +4,7 @@ const RouteData = [
       {
         id: "PUB00001",
         name: "QC Hall - Cubao",
+        type: "Bus",
         landmarks: [
           {
             id: 1,
@@ -34,6 +35,7 @@ const RouteData = [
 
       {
         id: "PUB00002",
+        type: "Bus",
         name: "QC Hall - Munoz",
         landmarks: [
           {
@@ -81,6 +83,7 @@ const RouteData = [
 
       {
         id: "PUB00003",
+        type: "Bus",
         name: "QC Hall - Robinsons Magnolia",
         landmarks: [
           {
@@ -137,6 +140,7 @@ const RouteData = [
 
       {
         id: "PUB00004",
+        type: "Bus",
         name: "Welcome Rotonda - Aurora/Katipunan",
         landmarks: [
           {
@@ -152,6 +156,7 @@ const RouteData = [
 
       {
         id: "PUJ00001",
+        type: "Jeepney",
         name: "Aurora/Lauan - QMC",
         landmarks: [
           {
@@ -183,6 +188,7 @@ const RouteData = [
 
       {
         id: "PUJ00002",
+        type: "Jeepney",
         name: "EDSA/North Ave. - Project 6",
         landmarks: [
           {
@@ -214,6 +220,7 @@ const RouteData = [
 
       {
         id: "PUJ00003",
+        type: "Jeepney",
         name: "Marcos Ave. - Quirino Highway via Tandang Sora",
         landmarks: [
           {
@@ -237,6 +244,7 @@ const RouteData = [
 
       {
         id: "PUJ00004",
+        type: "Jeepney",
         name: "Proj 2&3 - Welcome Rotonda",
         landmarks: [
           {
@@ -252,6 +260,7 @@ const RouteData = [
 
       {
         id: "PUJ00005",
+        type: "Jeepney",
         name: "SM North - UP",
         landmarks: [
           {
@@ -315,6 +324,7 @@ const RouteData = [
 
       {
         id: "PUJ00006",
+        type: "Jeepney",
         name: "Tandang Sora - Visayas Ave. via QC Hall",
         landmarks: [
           {

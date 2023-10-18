@@ -1,103 +1,85 @@
 // packages
 import React, { useState } from 'react';
-import { Map, NavigationControl, Marker, Layer, Source } from 'react-map-gl';
+import { Map, Layer, Source } from 'react-map-gl';
 import { useLazyQuery } from '@apollo/client';
-import { NEARBY_ROUTES } from '../graphql/Queries';
+import { TRIP_PLANNING } from '../graphql/Queries';
+import { Link } from 'react-router-dom';
+import InputField from '../components/inputField';
 import '../App.css';
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 
-// -----------------------------
 
-// importing routes
-import PUB1 from '../routes/LTFRB_PUB0001.geojson';
-import PUB2 from '../routes/LTFRB_PUB0002.geojson';
-import PUB3 from '../routes/LTFRB_PUB0003.geojson';
-import PUB4 from '../routes/LTFRB_PUB0004.geojson';
-import PUJ1 from '../routes/LTFRB_PUJ0001.geojson';
-import PUJ2 from '../routes/LTFRB_PUJ0002.geojson';
-import PUJ3 from '../routes/LTFRB_PUJ0003.geojson';
-import PUJ4 from '../routes/LTFRB_PUJ0004.geojson';
-import PUJ5 from '../routes/LTFRB_PUJ0005.geojson';
-import PUJ6 from '../routes/LTFRB_PUJ0006.geojson';
+// -----------------------------
 
 
 const PathFinding = () => {
-    // initializing routes
-  const routeDataMap = {
-    LTFRB_PUB0001: PUB1, // QC Hall - Munoz
-    LTFRB_PUB0002: PUB2, // QC Hall - Cubao
-    LTFRB_PUB0003: PUB3, // QC Hall - Robinsons Magnolia
-    LTFRB_PUB0004: PUB4, // Welcome Rotonda - Aurora/Katipunan
-    LTFRB_PUJ0001: PUJ1, // Aurora/Lauan - QMC
-    LTFRB_PUJ0002: PUJ2, // EDSA/North Ave. - Project 6
-    LTFRB_PUJ0003: PUJ3, // Marcos Ave. - Quirino Highway via T. Sora
-    LTFRB_PUJ0004: PUJ4, // Proj 2&3 - Welcome Rotonda
-    LTFRB_PUJ0005: PUJ5, // EDSA North - UP
-    LTFRB_PUJ0006: PUJ6, // Tandang Sora - Visayas Ave. via QC Hall
-  };
 
-  // initial settings
-  const [settings] = useState({
-    touchZoom: false,
-    doubleClickZoom: false
+    // initial settings
+    const [settings] = useState({
+        touchZoom: false,
+        doubleClickZoom: false,
+        minZoom: 14,
+        maxZoom: 17,
     });
-  
-  // ---------------- Nearby routes function -------------------------
 
-  const [latitude, setLatitude] = useState("")
-  const [longitude, setLongitude] = useState("")
-  const [showPopup, setShowPopup] = useState(false);
-  const [highlightedRouteGeoJson, setHighlightedRouteGeoJson] = useState(null); // hover over a route
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  const [getNearbyRoutes, { loading, error, data }] = useLazyQuery(NEARBY_ROUTES, {variables: {lat: latitude, lon: longitude}});
-  if (error) return <p>Error: {error.message}</p>;
-  
-  const allRoutes = data?.stopsByRadius?.edges?.flatMap((edge) => edge?.node?.stop?.routes) || [];   
-  const uniqueRoutesSet = new Set();
-  
-  const routes = allRoutes.filter((route) => {   // filter out duplicates using the 'longName' property as the identifier
-    if (!uniqueRoutesSet.has(route.longName)) {
-      uniqueRoutesSet.add(route.longName);
-      console.log(allRoutes);
-      return true;
-    }
-    return false;
-  });
-
-  async function handleClick(event) { // on double click
-    const coords = event.lngLat; // gets the coordinates of clicked location
-    setLongitude(coords.lng);
-    setLatitude(coords.lat);
-    await getNearbyRoutes() // requests query
-    console.log(coords);
-    setShowPopup(true);
-  }
-  
-  // -----------------------------------------------------------
-  
-  const handleRouteNameMouseEnter = (route) => { // when a nearby route is hovered, the route is highlighted on the map
-    const cleanGtfsId = route.gtfsId.slice(2);
-    const geojsonData = routeDataMap[cleanGtfsId];
-    setHighlightedRouteGeoJson(geojsonData);
-  };
-
-  const handleRouteNameMouseLeave = () => { // removes highlighted route
-    setHighlightedRouteGeoJson(null);
-  };
-
-  const handleClosePopup = () => { // close nearby route popup
-    setShowPopup(false);
-  };
-
-  const handleSidebarToggle = () => { // toggles sidebar
-    setIsSidebarOpen(!isSidebarOpen);
-  };
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const handleSidebarToggle = () => { // toggles sidebar
+        setIsSidebarOpen(!isSidebarOpen);
+      };
+      
+    // Initial Screen
+    const [askOpen, setAskOpen] = useState(true); 
+    const [origin, setOrigin] = useState();
+    const [destination, setDestination] = useState();
     
+    // Planned Itinerary
+    const [itineraryOpen, setItineraryOpen] = useState(false);
+
+    const [showError, setShowError] = useState(false);
+
+    const [tripPlan, { loading, error, data }] = useLazyQuery(TRIP_PLANNING);
+    const [tripPlan2, { data2 }] = useLazyQuery(TRIP_PLANNING, {variables: {origin: "14.650262,121.040416", destination: "14.654916,121.064408"}});
+
+
+    function findPath() {
+        if (origin != null && destination != null) {
+            setAskOpen(false);
+            setItineraryOpen(true);
+            console.log("From:", origin.coordinates, "\nTo:", destination.coordinates);
+
+             tripPlan({
+                variables: {
+                  origin: "14.650262,121.040416",
+                  destination: "14.654916,121.064408",
+                },
+                onCompleted: (result) => {
+                  // Access data here when the query is completed
+                  console.log("Query result:", data);
+                },
+              });
+              
+        }
+        else  {
+            setShowError(true);
+            console.log("An error occured");
+        }
+    };
+
+    const closeError = () => {
+        setShowError(false);
+    }
+
+    const handleOriginSelected = (location) => {
+        setOrigin(location);
+    };
+
+    const handleDestinationSelected = (location) => {
+        setDestination(location);
+    };
+
     return (
     <>
-    <h1>HELLO MARTIN</h1>
     <div className="Display">
 
         <div className="App">
@@ -117,13 +99,41 @@ const PathFinding = () => {
             }}
             mapboxAccessToken="pk.eyJ1IjoiYWNlZG9taW5nbyIsImEiOiJjbGpvOTB3ZjMwMWFiM2dxbDc5cjU0Y2FvIn0.aJC6z1-KjLBiG15MUfzO4Q"
             mapStyle="mapbox://styles/mapbox/light-v11"
-            onDblClick={handleClick}
             >
+            
             </Map>
         </div>
-    </div>
+        
+        { askOpen && (
+            <div className="origDest">
+                <h1>Plan your Itinerary</h1>
+                <Link to="/" className="close-button" style={{textDecoration: 'none', right:'0px'}}> X </Link>
+                <h3>From:</h3>
+                <InputField onLocationSelected={handleOriginSelected} placeholder="Origin"/>
+                <h3>To:</h3>
+                <InputField onLocationSelected={handleDestinationSelected} placeholder="Destination" />
+                <h3></h3>
+                <button onClick={findPath}>Find Path</button>
+            </div>
+        )
+        }
 
-    
+        { itineraryOpen && (
+            <div class="origDest">
+                <h1>Itinerary</h1>
+                <Link to="/" className="close-button" style={{textDecoration: 'none', right:'0px'}}> X </Link>
+            </div>
+        )
+        }
+
+        { showError && (
+            <div class="pop-up">
+            </div>
+        )
+        }
+
+        
+    </div>
     </>
     );
 };

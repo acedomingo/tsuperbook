@@ -10,7 +10,7 @@ export const SidebarData = [
     {
         title: "Home",
         icon: <MapIcon />,
-        link: "/home",
+        link: "/",
     },
     {
         title: "Path Finding",
@@ -31,6 +31,5 @@ export const SidebarData = [
         title: "Feedback Form",
         icon: <HelpIcon />,
         link: "https://forms.gle/hsQ11bMd9VJ2NNX96",
-        external: true, //to indicate external link
     }
 ]

@@ -206,6 +206,7 @@ body {
   line-height: 20px;
 }
 
+
 .path-finding {
   position: absolute;
   top: 2.5%;
@@ -227,4 +228,12 @@ body {
   bottom: 40%;
   border-radius: 20px;
   box-shadow: 0 4px 5px rgba(0, 0, 0, 0.2);
+  z-index: 100;
+}
+
+.yellow {
+  background-color: #FFC133;
+  width:100%;
+  height:100%;
+  z-index:5;
 }

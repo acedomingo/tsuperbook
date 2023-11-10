@@ -37,6 +37,7 @@ const PathFinding = () => {
     
     // Planned Itinerary
     const [itineraryOpen, setItineraryOpen] = useState(false);
+    const [currentLegIndex, setCurrentLegIndex] = useState(0);
     const [polylineCoords, setPolylineCoords] = useState(null);
 
     const [showError, setShowError] = useState(false);
@@ -80,6 +81,14 @@ const PathFinding = () => {
         setDestination(location);
     };
 
+    const handleNextLeg = () => {
+        setCurrentLegIndex((prevIndex) => (prevIndex < data.plan.itineraries[0].legs.length - 1 ? prevIndex + 1 : prevIndex));
+    };
+
+    const handlePreviousLeg = () => {
+        setCurrentLegIndex((prevIndex) => (prevIndex > 0 ? prevIndex - 1 : prevIndex));
+    };
+
     return (
     <>
     <div className="Display">
@@ -103,31 +112,35 @@ const PathFinding = () => {
             mapStyle="mapbox://styles/mapbox/light-v11"
             maxBounds={quezonCityBoundingBox}
             >
-            {itineraryOpen && data.plan.itineraries.map((itinerary, index) => (
-                <Source
-                type="geojson"
-                data={{
-                    type: 'FeatureCollection',
-                    features: itinerary.legs.map(leg => ({
-                    type: 'Feature',
-                    geometry: {
+            {itineraryOpen &&
+              data.plan.itineraries.map((itinerary, index) => (
+                <React.Fragment key={index}>
+                  {/* Display the entire itinerary legGeometry on the map */}
+                  <Source
+                    type="geojson"
+                    data={{
+                      type: 'Feature',
+                      geometry: {
                         type: 'LineString',
-                        coordinates: polyline.decode(leg.legGeometry.points) 
-                    }
-                    }))
-                }}
-                key={index}
-                >
-                <Layer
-                type="line"
-                layout={{ 'line-cap': 'round', 'line-join': 'round' }}
-                paint={{
-                    'line-color': 'blue',
-                    'line-width': 2
-                }}
-                />
-                </Source>
-            ))}
+                        coordinates: [].concat(
+                          ...itinerary.legs.map(
+                            (leg) => polyline.decode(leg.legGeometry.points) || []
+                          )
+                        ),
+                      },
+                    }}
+                  >
+                    <Layer
+                      type="line"
+                      layout={{ 'line-cap': 'round', 'line-join': 'round' }}
+                      paint={{
+                        'line-color': 'red',
+                        'line-width': 4,
+                      }}
+                    />
+                  </Source>
+                </React.Fragment>
+              ))}
             </Map>
         </div>
         
@@ -157,36 +170,52 @@ const PathFinding = () => {
         )
         }
 
-        { itineraryOpen && (
-            <div className="itinerary">
-                <Link to="/" className="close-button" style={{textDecoration: 'none', right:'0px'}}> X </Link>
-                <div>
-                {data.plan.itineraries.map((itinerary, index) => (
+        {itineraryOpen && (
+          <div className="itinerary">
+            <Link to="/" className="close-button" style={{textDecoration: 'none', right:'0px'}}> X </Link>
+            <div>
+              {data.plan.itineraries.map((itinerary, index) => (
                 <div key={index}>
-                    <h2>Your Trip</h2>
-                    {itinerary.legs.map((leg, legIndex) => (
+                  <h2>Your Trip</h2>
+                  {itinerary.legs.length <= 1 ? (
+                    <p>No itineraries found</p>
+                  ) : (
+                    <>
+                      {itinerary.legs.map((leg, legIndex) => (
                         <>
-                        { leg.mode == "WALK" ? (<p>Mode: WALK</p>) : 
-                         (
-                         <>
-                            <p>Route: {leg.route.longName} </p>
-                            <p>Mode: {leg.route.gtfsId.includes("PUJ") ? "Jeepney" : "Bus"}</p>
-                         </>
-                         )
-                        }
-                        
-                        <p>Distance: {leg.distance}</p>
-                        <p>From: {leg.from.name == "Origin" ? (origin.place_name) : (leg.from.name)}</p>
-                        <p>To: {leg.to.name == "Destination" ? (destination.place_name) : leg.to.name}</p>
-                        <p>__________________________________________________</p>
+                          {/* Only display the current leg */}
+                          {legIndex === currentLegIndex && (
+                            <>
+                              {leg.mode === 'WALK' ? (
+                                <p>Mode: WALK</p>
+                              ) : (
+                                <>
+                                  <p>Route: {leg.route.longName} </p>
+                                  <p>Mode: {leg.route.gtfsId.includes('PUJ') ? 'Jeepney' : 'Bus'}</p>
+                                </>
+                              )}
+
+                              <p>Distance: {leg.distance}</p>
+                              <p>From: {leg.from.name === 'Origin' ? origin.place_name : leg.from.name}</p>
+                              <p>To: {leg.to.name === 'Destination' ? destination.place_name : leg.to.name}</p>
+                            </>
+                          )}
                         </>
-                    ))}
+                      ))}
+                      {/* Navigation buttons */}
+                      <button className='arrow' onClick={handlePreviousLeg} disabled={currentLegIndex === 0}>
+                        ←
+                      </button>
+                      <button className='arrow' onClick={handleNextLeg} disabled={currentLegIndex === itinerary.legs.length - 1} style={{position: 'absolute', right:'15px'}}>
+                        →
+                      </button>
+                    </>
+                  )}
                 </div>
-                ))}
+              ))}
             </div>
-            </div>
-        )
-        }
+          </div>
+        )}
 
         { showError && (
             <div className="pop-up">

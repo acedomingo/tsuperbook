@@ -1,6 +1,6 @@
 // packages
-import React, { useState } from 'react';
-import { Map, Layer, Source } from 'react-map-gl';
+import React, { useState, useEffect  } from 'react';
+import { Map, Layer, Source, Marker } from 'react-map-gl';
 import { useLazyQuery } from '@apollo/client';
 import { TRIP_PLANNING } from '../graphql/Queries';
 import { Link } from 'react-router-dom';
@@ -38,7 +38,8 @@ const PathFinding = () => {
     // Planned Itinerary
     const [itineraryOpen, setItineraryOpen] = useState(false);
     const [currentLegIndex, setCurrentLegIndex] = useState(0);
-    const [polylineCoords, setPolylineCoords] = useState(null);
+    const [legGeometries, setLegGeometries] = useState([]);
+    const [noItineraries, setNoItineraries] = useState(false);
 
     const [showError, setShowError] = useState(false);
 
@@ -48,8 +49,42 @@ const PathFinding = () => {
             setItineraryOpen(true);
             setAskOpen(false);
 
+            if (data.plan.itineraries[0].legs.length <= 1)
+              setNoItineraries(true);
+
+            console.log("No Itineraries? ", noItineraries);
+
         }
     });
+
+    useEffect(() => {
+      // Process leg geometries when data is available
+      if (data && data.plan && data.plan.itineraries && data.plan.itineraries.length > 0) {
+        const legs = data.plan.itineraries[0].legs || [];
+
+        if (legs.length > 1) {
+
+        const newLegGeometries = [];
+  
+        legs.forEach((leg, index) => {
+          const geometryPoints = leg.legGeometry.points;
+          const coordinates = polyline.decode(geometryPoints).map((point) => [point[1], point[0]]);
+          const originCoords = [leg.from.lon, leg.from.lat];
+          const destinationCoords = [leg.to.lon, leg.to.lat];
+  
+          newLegGeometries.push({
+            coordinates,
+            highlighted: index === currentLegIndex,
+            originCoords,
+            destinationCoords,
+          });
+        });
+  
+        setLegGeometries(newLegGeometries);
+        }
+      }
+    }, [data, currentLegIndex]);
+  
 
     function findPath() {
         if (origin != null && destination != null) {
@@ -89,6 +124,10 @@ const PathFinding = () => {
         setCurrentLegIndex((prevIndex) => (prevIndex > 0 ? prevIndex - 1 : prevIndex));
     };
 
+    function refreshPage(){ 
+      window.location.reload(); 
+    }
+
     return (
     <>
     <div className="Display">
@@ -112,35 +151,43 @@ const PathFinding = () => {
             mapStyle="mapbox://styles/mapbox/light-v11"
             maxBounds={quezonCityBoundingBox}
             >
-            {itineraryOpen &&
-              data.plan.itineraries.map((itinerary, index) => (
-                <React.Fragment key={index}>
-                  {/* Display the entire itinerary legGeometry on the map */}
-                  <Source
-                    type="geojson"
-                    data={{
-                      type: 'Feature',
-                      geometry: {
-                        type: 'LineString',
-                        coordinates: [].concat(
-                          ...itinerary.legs.map(
-                            (leg) => polyline.decode(leg.legGeometry.points) || []
-                          )
-                        ),
-                      },
+           {legGeometries.map(({ coordinates, highlighted, originCoords, destinationCoords }, index) => (
+              <React.Fragment key={index}>
+                <Source
+                  type="geojson"
+                  data={{ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates } }}
+                >
+                  <Layer
+                    id={`leg-geometry-${index}`}
+                    type="line"
+                    paint={{
+                      'line-color': highlighted ? '#800080' : '#088',
+                      'line-width': highlighted ? 4 : 2,
                     }}
-                  >
-                    <Layer
-                      type="line"
-                      layout={{ 'line-cap': 'round', 'line-join': 'round' }}
-                      paint={{
-                        'line-color': 'red',
-                        'line-width': 4,
-                      }}
-                    />
-                  </Source>
-                </React.Fragment>
-              ))}
+                  />
+                </Source>
+
+                {/* Conditional rendering of markers only for the highlighted leg */}
+                {highlighted && (
+                  <>
+                    <Marker
+                      latitude={originCoords[1]}
+                      longitude={originCoords[0]}
+                    >
+                      <div className="marker start-marker">Start</div>
+                    </Marker>
+
+                    <Marker
+                      latitude={destinationCoords[1]}
+                      longitude={destinationCoords[0]}
+
+                    >
+                      <div className="marker end-marker">End</div>
+                    </Marker>
+                  </>
+                )}
+              </React.Fragment>
+            ))}
             </Map>
         </div>
         
@@ -178,7 +225,10 @@ const PathFinding = () => {
                 <div key={index}>
                   <h2>Your Trip</h2>
                   {itinerary.legs.length <= 1 ? (
+                    <>
                     <p>No itineraries found</p>
+                    <button onClick={refreshPage} style={{textDecoration: 'none'}}> Plan another trip </button>
+                    </>
                   ) : (
                     <>
                       {itinerary.legs.map((leg, legIndex) => (
@@ -206,6 +256,7 @@ const PathFinding = () => {
                       <button className='arrow' onClick={handlePreviousLeg} disabled={currentLegIndex === 0}>
                         ←
                       </button>
+                      <p style={{position: 'absolute', left:'125px', bottom: '1px'}}>Page {currentLegIndex+1} out of {itinerary.legs.length}</p>
                       <button className='arrow' onClick={handleNextLeg} disabled={currentLegIndex === itinerary.legs.length - 1} style={{position: 'absolute', right:'15px'}}>
                         →
                       </button>

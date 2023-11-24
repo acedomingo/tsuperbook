@@ -3,11 +3,11 @@ import React, { useState } from 'react';
 import { Map, NavigationControl, Marker, Layer, Source } from 'react-map-gl';
 import { useLazyQuery } from '@apollo/client';
 import { NEARBY_ROUTES } from '../graphql/Queries';
+import { ROUTE_DETAILS } from '../graphql/Queries';
 import '../App.css';
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import RouteData from "../components/RouteData";
-
 // -----------------------------
 
 // importing routes
@@ -53,10 +53,14 @@ const Home = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedRoute, setSelectedRoute] = useState(null);
   const [landmarks, setLandmarks] = useState([]);
+  const [stopData, setStopData] = useState([]);
+  const [showStopPopup, setShowStopPopup] = useState(false);
+  
+  const [getRouteDetails, { loading: routeLoading, error: routeError, data: routeData }] = useLazyQuery(ROUTE_DETAILS);
 
   const [getNearbyRoutes, { loading, error, data }] = useLazyQuery(NEARBY_ROUTES, {variables: {lat: latitude, lon: longitude}});
   if (error) return <p>Error: {error.message}</p>;
-  
+
   const allRoutes = data?.stopsByRadius?.edges?.flatMap((edge) => edge?.node?.stop?.routes) || [];   
   const uniqueRoutesSet = new Set();
   
@@ -77,10 +81,10 @@ const Home = () => {
     console.log(coords);
     setShowPopup(true);
     setSelectedRoute(null);
-    setLandmarks([]);
+    setLandmarks([]); 
   }
 
-  const handleListItemClick = (route) => { // Get the RouteData item that matches the route name.
+  const handleListItemClick = async (route) => { // Get the RouteData item that matches the route name.
     const routeDataItem = RouteData.find((item) => item.name === route.longName);
     setSelectedRoute(routeDataItem);
     setLandmarks(routeDataItem.landmarks);
@@ -96,6 +100,22 @@ const Home = () => {
     } else {
       console.log(`No Landmarks found for ${route.longName}.`);
     }
+
+    const routeDetails = await getRouteDetails({ variables: { route_id: route.gtfsId } });
+    const stops = routeDetails?.data?.route?.stops || [];
+
+    if (stops.length > 0) {
+      console.log(`Stops for ${route.longName}:`, stops);
+
+      const stopNames = stops.map((stop) => stop.name);
+      console.log(stopNames);
+      setStopData(stopNames);
+
+    } else {
+      console.log(`No stops found for ${route.longName}.`);
+    }
+
+    handleShowStopPopup();
   };
   
   // -----------------------------------------------------------
@@ -118,6 +138,10 @@ const Home = () => {
 
   const handleSidebarToggle = () => { // toggles sidebar
     setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const handleShowStopPopup = (stops) => {
+    setShowStopPopup(true); // Show the popup
   };
 
   return (
@@ -214,7 +238,23 @@ const Home = () => {
             </>
           )}                                    
       </div>
-    )} 
+    )}
+
+        {showStopPopup && (
+              <div className="StopPopup">
+                <button className="close-button" onClick={() => setShowStopPopup(false)}>X</button>
+                  <h3>Stops:</h3>
+                    {stopData && stopData.length > 0 ? (
+                      <ul>
+                        {stopData.map((stop, index) => (
+                          <li key={index}>{stop}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p>No stops found for this route.</p>
+                    )}
+            </div>
+          )}
   
     </>
   );

@@ -97,7 +97,6 @@ const quezonCityBoundingBox = [[121.01869583129883,14.604514925547997],[121.0907
     await getNearbyRoutes() // requests query
     console.log(coords);
     setShowPopup(true);
-    setLandmarks([]);
   }
 
   const handleListItemClick = (route) => { // Get the RouteData item that matches the route name.
@@ -124,7 +123,6 @@ const quezonCityBoundingBox = [[121.01869583129883,14.604514925547997],[121.0907
     setShowPopup(false);
     setShowInfo(false);
     setSelectedRoute(null);
-    setLandmarks([]);
   };
 
   const handleSidebarToggle = () => { // toggles sidebar

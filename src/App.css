@@ -20,7 +20,7 @@ body {
   align-items: flex-start; /* Align content to the top of the screen */
   height: 100vh; /* Set height to 100% of viewport height */
   width: 100%; /* Set width to 100% */
-  overflow: auto; /* Add scrolling if content overflows the screen */
+  overflow:hidden; /* Add scrolling if content overflows the screen */
   margin: 0; /* Remove any margin that might be causing gaps */
   padding: 0; /* Remove any padding */
 }
@@ -269,4 +269,19 @@ body {
   width: 50px;
   text-align: center;
   font-weight: bold;
+}
+
+.routeInfo {
+  background: white;
+  height: 80%;
+  width: 300px;
+  position: absolute;
+  padding: 1%;
+  z-index: 1000;
+  border-radius: 20px;
+  box-shadow: 0 4px 5px rgba(0, 0, 0, 0.2);
+  right: 2%;
+  top: 7%;
+
+  overflow-y: scroll;
 }

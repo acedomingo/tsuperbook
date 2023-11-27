@@ -1,13 +1,14 @@
 // packages
-import React, { useState } from 'react';
-import { Map, NavigationControl, Marker, Layer, Source } from 'react-map-gl';
+import React, { useState, useEffect } from 'react';
+import { Map, Marker, Layer, Source } from 'react-map-gl';
 import { useLazyQuery } from '@apollo/client';
 import { NEARBY_ROUTES } from '../graphql/Queries';
-import { ROUTE_DETAILS } from '../graphql/Queries';
 import '../App.css';
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import RouteData from "../components/RouteData";
+import RouteInfo from '../components/RouteInfo';
+
 // -----------------------------
 
 // importing routes
@@ -22,7 +23,8 @@ import PUJ4 from '../routes/LTFRB_PUJ0004.geojson';
 import PUJ5 from '../routes/LTFRB_PUJ0005.geojson';
 import PUJ6 from '../routes/LTFRB_PUJ0006.geojson';
 
-const Home = () => {
+const Home = ({ route }) => {
+
 
   // initializing routes
   const routeDataMap = {
@@ -41,8 +43,12 @@ const Home = () => {
   // initial settings
   const [settings] = useState({
     touchZoom: false,
-    doubleClickZoom: false
-    });
+    doubleClickZoom: false,
+    minZoom: 14,
+    maxZoom: 17,
+});
+
+const quezonCityBoundingBox = [[121.01869583129883,14.604514925547997],[121.090736203863,14.694524072088583]];
   
   // ---------------- Nearby routes function -------------------------
 
@@ -51,16 +57,26 @@ const Home = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [highlightedRouteGeoJson, setHighlightedRouteGeoJson] = useState(null); // hover over a route
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // Route Information
+
+  const [showInfo, setShowInfo] = useState(false);
+  const [selectGeometry, setSelectGeometry] = useState(null);
   const [selectedRoute, setSelectedRoute] = useState(null);
-  const [landmarks, setLandmarks] = useState([]);
-  const [stopData, setStopData] = useState([]);
-  const [showStopPopup, setShowStopPopup] = useState(false);
+
+  useEffect(() => {
+    if (selectedRoute !== null) {
+      setShowPopup(false);
+      setShowInfo(true);
+    } else {
+      setShowInfo(false);
+    }
+  }, [selectedRoute]);
   
-  const [getRouteDetails, { loading: routeLoading, error: routeError, data: routeData }] = useLazyQuery(ROUTE_DETAILS);
 
   const [getNearbyRoutes, { loading, error, data }] = useLazyQuery(NEARBY_ROUTES, {variables: {lat: latitude, lon: longitude}});
   if (error) return <p>Error: {error.message}</p>;
-
+  
   const allRoutes = data?.stopsByRadius?.edges?.flatMap((edge) => edge?.node?.stop?.routes) || [];   
   const uniqueRoutesSet = new Set();
   
@@ -74,48 +90,22 @@ const Home = () => {
   });
 
   async function handleClick(event) { // on double click
+    setSelectedRoute(null);
     const coords = event.lngLat; // gets the coordinates of clicked location
     setLongitude(coords.lng);
     setLatitude(coords.lat);
     await getNearbyRoutes() // requests query
     console.log(coords);
     setShowPopup(true);
-    setSelectedRoute(null);
-    setLandmarks([]); 
+    setLandmarks([]);
   }
 
-  const handleListItemClick = async (route) => { // Get the RouteData item that matches the route name.
+  const handleListItemClick = (route) => { // Get the RouteData item that matches the route name.
     const routeDataItem = RouteData.find((item) => item.name === route.longName);
     setSelectedRoute(routeDataItem);
-    setLandmarks(routeDataItem.landmarks);
+    setSelectGeometry(routeDataMap["LTFRB_"+routeDataItem.id]);
+    console.log("LTFRB_"+routeDataItem.id, selectGeometry);
 
-    if (routeDataItem) { // If there is a matching RouteData item, display all of its landmarks.
-      const landmarks = routeDataItem.landmarks;
-      console.log(landmarks.length);
-  
-      console.log(`Landmarks for ${route.longName}:`); // Display the landmarks in a list.
-      landmarks.forEach((landmark) => {
-        console.log(`- ${landmark.name}`);
-      });
-    } else {
-      console.log(`No Landmarks found for ${route.longName}.`);
-    }
-
-    const routeDetails = await getRouteDetails({ variables: { route_id: route.gtfsId } });
-    const stops = routeDetails?.data?.route?.stops || [];
-
-    if (stops.length > 0) {
-      console.log(`Stops for ${route.longName}:`, stops);
-
-      const stopNames = stops.map((stop) => stop.name);
-      console.log(stopNames);
-      setStopData(stopNames);
-
-    } else {
-      console.log(`No stops found for ${route.longName}.`);
-    }
-
-    handleShowStopPopup();
   };
   
   // -----------------------------------------------------------
@@ -132,6 +122,7 @@ const Home = () => {
 
   const handleClosePopup = () => { // close nearby route popup
     setShowPopup(false);
+    setShowInfo(false);
     setSelectedRoute(null);
     setLandmarks([]);
   };
@@ -140,9 +131,6 @@ const Home = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  const handleShowStopPopup = (stops) => {
-    setShowStopPopup(true); // Show the popup
-  };
 
   return (
     <>
@@ -166,6 +154,7 @@ const Home = () => {
       mapboxAccessToken="pk.eyJ1IjoiYWNlZG9taW5nbyIsImEiOiJjbGpvOTB3ZjMwMWFiM2dxbDc5cjU0Y2FvIn0.aJC6z1-KjLBiG15MUfzO4Q"
       mapStyle="mapbox://styles/mapbox/light-v11"
       onDblClick={handleClick}
+      maxBounds={quezonCityBoundingBox}
     >
       
       {showPopup && (
@@ -193,6 +182,18 @@ const Home = () => {
           return null;
         }
       })}
+
+      {showInfo && (
+        <Source type="geojson" data={selectGeometry}>
+            <Layer 
+              type="line" 
+              paint={{
+                'line-color': "purple",
+                'line-width': 4,
+                'line-opacity': 1,
+              }} />
+        </Source>
+      )}
     </Map>
     </div>
     </div>
@@ -219,42 +220,13 @@ const Home = () => {
               </li>
           ))}
           </ul>
-        )}
-
-        {selectedRoute && (
-            <>
-              <h3>Landmarks for {selectedRoute.name} ({selectedRoute.type}):</h3>
-              <ul>
-                {selectedRoute?.landmarks?.length > 0 ? (
-                  selectedRoute.landmarks.map((landmark) => (
-                    <li key={landmark.id}>
-                      {landmark.name}
-                    </li>
-                ))
-                ) : (
-                <p>No landmarks found for {selectedRoute.name}.</p>
-              )}
-              </ul>
-            </>
-          )}                                    
+        )}                                
       </div>
-    )}
+    )} 
 
-        {showStopPopup && (
-              <div className="StopPopup">
-                <button className="close-button" onClick={() => setShowStopPopup(false)}>X</button>
-                  <h3>Stops:</h3>
-                    {stopData && stopData.length > 0 ? (
-                      <ul>
-                        {stopData.map((stop, index) => (
-                          <li key={index}>{stop}</li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p>No stops found for this route.</p>
-                    )}
-            </div>
-          )}
+    {showInfo && (
+      <RouteInfo selectRoute={selectedRoute} onClosePopup={handleClosePopup}/>
+    )}
   
     </>
   );

@@ -1,8 +1,6 @@
-import React from 'react';
-
 const RouteData = [
       {
-        id: "PUB00001",
+        id: "PUB0002",
         name: "QC Hall - Cubao",
         type: "Bus",
         landmarks: [
@@ -34,7 +32,7 @@ const RouteData = [
       },
 
       {
-        id: "PUB00002",
+        id: "PUB0001",
         type: "Bus",
         name: "QC Hall - Munoz",
         landmarks: [
@@ -82,7 +80,7 @@ const RouteData = [
       },
 
       {
-        id: "PUB00003",
+        id: "PUB0003",
         type: "Bus",
         name: "QC Hall - Robinsons Magnolia",
         landmarks: [
@@ -139,7 +137,7 @@ const RouteData = [
 
 
       {
-        id: "PUB00004",
+        id: "PUB0004",
         type: "Bus",
         name: "Welcome Rotonda - Aurora/Katipunan",
         landmarks: [
@@ -155,7 +153,7 @@ const RouteData = [
       },
 
       {
-        id: "PUJ00001",
+        id: "PUJ0001",
         type: "Jeepney",
         name: "Aurora/Lauan - QMC",
         landmarks: [
@@ -187,7 +185,7 @@ const RouteData = [
       },
 
       {
-        id: "PUJ00002",
+        id: "PUJ0002",
         type: "Jeepney",
         name: "EDSA/North Ave. - Project 6",
         landmarks: [
@@ -219,7 +217,7 @@ const RouteData = [
       },
 
       {
-        id: "PUJ00003",
+        id: "PUJ0003",
         type: "Jeepney",
         name: "Marcos Ave. - Quirino Highway via Tandang Sora",
         landmarks: [
@@ -243,7 +241,7 @@ const RouteData = [
       },
 
       {
-        id: "PUJ00004",
+        id: "PUJ0004",
         type: "Jeepney",
         name: "Proj 2&3 - Welcome Rotonda",
         landmarks: [
@@ -259,7 +257,7 @@ const RouteData = [
       },
 
       {
-        id: "PUJ00005",
+        id: "PUJ0005",
         type: "Jeepney",
         name: "SM North - UP",
         landmarks: [
@@ -323,7 +321,7 @@ const RouteData = [
       },
 
       {
-        id: "PUJ00006",
+        id: "PUJ0006",
         type: "Jeepney",
         name: "Tandang Sora - Visayas Ave. via QC Hall",
         landmarks: [

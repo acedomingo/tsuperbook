@@ -59,7 +59,7 @@ const PathFinding = () => {
 
     useEffect(() => {
       // Process leg geometries when data is available
-      if (data && data.plan && data.plan.itineraries && data.plan.itineraries.length > 0) {
+      if (data && data.plan && data.plan.itineraries) {
         const legs = data.plan.itineraries[0].legs || [];
 
         if (legs.length > 1) {
@@ -87,7 +87,7 @@ const PathFinding = () => {
   
 
     function findPath() {
-        if (origin != null && destination != null) {
+        if (origin && destination) {
             console.log("From:", origin.coordinates, "\nTo:", destination.coordinates);
 
              tripPlan({
@@ -126,6 +126,10 @@ const PathFinding = () => {
 
     function refreshPage(){ 
       window.location.reload(); 
+    }
+
+    function clickHandler(e){
+      e.preventDefault()
     }
 
     return (
@@ -197,14 +201,14 @@ const PathFinding = () => {
             <div className="origDest" style={{zIndex: 10}}>
             {!loading ? (
                 <>
-                    <h1>Plan your Itinerary</h1>
+                    <h1><center>Plan your Itinerary</center></h1>
                     <Link to="/" className="close-button" style={{textDecoration: 'none', right:'0px'}}> X </Link>
                     <h3>From:</h3>
                     <InputField onLocationSelected={handleOriginSelected} placeholder="Origin"/>
                     <h3>To:</h3>
                     <InputField onLocationSelected={handleDestinationSelected} placeholder="Destination" />
                     <h3></h3>
-                    <button onClick={findPath}>Find Path</button>
+                    <button onClick={findPath} className='findButton'>Find Path</button>
                 </>
                 
             ) : (
@@ -227,7 +231,7 @@ const PathFinding = () => {
                   {itinerary.legs.length <= 1 ? (
                     <>
                     <p>No itineraries found</p>
-                    <button onClick={refreshPage} style={{textDecoration: 'none'}}> Plan another trip </button>
+                   
                     </>
                   ) : (
                     <>
@@ -240,7 +244,9 @@ const PathFinding = () => {
                                 <p>Mode: WALK</p>
                               ) : (
                                 <>
-                                  <p>Route: {leg.route.longName} </p>
+                                  <Link className='routeName' to={`/?selectRoute=${String(leg.route.longName)}`}>
+                                    <p>Route: {leg.route.longName}</p>
+                                  </Link>
                                   <p>Mode: {leg.route.gtfsId.includes('PUJ') ? 'Jeepney' : 'Bus'}</p>
                                 </>
                               )}
@@ -264,6 +270,7 @@ const PathFinding = () => {
                   )}
                 </div>
               ))}
+               <button onClick={refreshPage} className='findButton' style={{textDecoration: 'none', position: 'relative', top: 100 }}> Plan another trip </button>
             </div>
           </div>
         )}

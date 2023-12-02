@@ -8,6 +8,7 @@ import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import RouteData from "../components/RouteData";
 import RouteInfo from '../components/RouteInfo';
+import { useLocation } from 'react-router-dom';
 
 // -----------------------------
 
@@ -23,7 +24,7 @@ import PUJ4 from '../routes/LTFRB_PUJ0004.geojson';
 import PUJ5 from '../routes/LTFRB_PUJ0005.geojson';
 import PUJ6 from '../routes/LTFRB_PUJ0006.geojson';
 
-const Home = ({ route }) => {
+function Home(props) {
 
 
   // initializing routes
@@ -59,23 +60,42 @@ const quezonCityBoundingBox = [[121.01869583129883,14.604514925547997],[121.0907
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Route Information
-
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const selectRouteParam = searchParams.get('selectRoute');
   const [showInfo, setShowInfo] = useState(false);
   const [selectGeometry, setSelectGeometry] = useState(null);
   const [selectedRoute, setSelectedRoute] = useState(null);
 
   useEffect(() => {
-    if (selectedRoute !== null) {
+    setShowInfo(false);
+
+    if (selectedRoute) {
+      console.log("New Route:", selectedRoute)
       setShowPopup(false);
+      setSelectGeometry(routeDataMap["LTFRB_"+selectedRoute.id]);      setShowInfo(false);
       setShowInfo(true);
-    } else {
-      setShowInfo(false);
+    } 
+    else {
+      setSelectGeometry(null);
     }
+    setHighlightedRouteGeoJson(null);
   }, [selectedRoute]);
   
+  useEffect(() => {
+    console.log("Pathfinding Route:", selectRouteParam)
+
+    if (selectRouteParam) {
+      const selectRoute = RouteData.find((item) => item.name === selectRouteParam);
+      console.log("Pathfinding Route Data Item:", selectRoute);
+      setSelectedRoute(selectRoute);
+      console.log("Pathfinding Route Data Item:", selectedRoute);
+    } else {
+      console.log("Select route is null.");
+    }
+  }, [selectRouteParam])
 
   const [getNearbyRoutes, { loading, error, data }] = useLazyQuery(NEARBY_ROUTES, {variables: {lat: latitude, lon: longitude}});
-  if (error) return <p>Error: {error.message}</p>;
   
   const allRoutes = data?.stopsByRadius?.edges?.flatMap((edge) => edge?.node?.stop?.routes) || [];   
   const uniqueRoutesSet = new Set();
@@ -83,7 +103,6 @@ const quezonCityBoundingBox = [[121.01869583129883,14.604514925547997],[121.0907
   const routes = allRoutes.filter((route) => {   // filter out duplicates using the 'longName' property as the identifier
     if (!uniqueRoutesSet.has(route.longName)) {
       uniqueRoutesSet.add(route.longName);
-      console.log(allRoutes);
       return true;
     }
     return false;
@@ -95,24 +114,39 @@ const quezonCityBoundingBox = [[121.01869583129883,14.604514925547997],[121.0907
     setLongitude(coords.lng);
     setLatitude(coords.lat);
     await getNearbyRoutes() // requests query
-    console.log(coords);
     setShowPopup(true);
   }
 
   const handleListItemClick = (route) => { // Get the RouteData item that matches the route name.
-    const routeDataItem = RouteData.find((item) => item.name === route.longName);
-    setSelectedRoute(routeDataItem);
-    setSelectGeometry(routeDataMap["LTFRB_"+routeDataItem.id]);
-    console.log("LTFRB_"+routeDataItem.id, selectGeometry);
+    console.log("Select Route:", route)
+    try{
+      const routeDataItem = RouteData.find((item) => item.name === route.longName);
+      setSelectedRoute(routeDataItem);
+      console.log("Route Data Item:", selectedRoute);
+      console.log("LTFRB_" + routeDataItem.id, selectGeometry);
+    }
+    catch {
+      const routeDataItem = RouteData.find((item) => item.name === route.name);
+      setSelectedRoute(routeDataItem);
+      console.log("Route Data Item:", selectedRoute);
+      console.log("LTFRB_" + routeDataItem.id, selectGeometry);
+    }
 
   };
   
   // -----------------------------------------------------------
   
   const handleRouteNameMouseEnter = (route) => { // when a nearby route is hovered, the route is highlighted on the map
-    const cleanGtfsId = route.gtfsId.slice(2);
-    const geojsonData = routeDataMap[cleanGtfsId];
-    setHighlightedRouteGeoJson(geojsonData);
+    try {
+      const cleanGtfsId = route.gtfsId.slice(2);
+      const geojsonData = routeDataMap[cleanGtfsId];
+      setHighlightedRouteGeoJson(geojsonData);
+    }
+    catch {
+      const cleanGtfsId = route.id.slice(2);
+      const geojsonData = routeDataMap[cleanGtfsId];
+      setHighlightedRouteGeoJson(geojsonData);
+    }
   };
 
   const handleRouteNameMouseLeave = () => { // removes highlighted route
@@ -128,7 +162,6 @@ const quezonCityBoundingBox = [[121.01869583129883,14.604514925547997],[121.0907
   const handleSidebarToggle = () => { // toggles sidebar
     setIsSidebarOpen(!isSidebarOpen);
   };
-
 
   return (
     <>
@@ -170,8 +203,8 @@ const quezonCityBoundingBox = [[121.01869583129883,14.604514925547997],[121.0907
               <Layer 
                 type="line" 
                 paint={{
-                  'line-color': highlightedRouteGeoJson === geojsonData ? 'purple' : `#${route.color}`,
-                  'line-width': highlightedRouteGeoJson === geojsonData ? 4 : 2,
+                  'line-color': `#${route.color}`,
+                  'line-width': 2,
                   'line-opacity':  highlightedRouteGeoJson && highlightedRouteGeoJson !== geojsonData ? 0.15 : 0.7,
                 }} />
             </Source>
@@ -181,15 +214,28 @@ const quezonCityBoundingBox = [[121.01869583129883,14.604514925547997],[121.0907
         }
       })}
 
-      {showInfo && (
+      {highlightedRouteGeoJson && (
+        <Source type="geojson" data={highlightedRouteGeoJson}>
+          <Layer
+            type="line"
+            paint={{
+              'line-color': 'purple',
+              'line-width': 4,
+              'line-opacity': 1,
+            }}
+          />
+        </Source>
+      )}
+
+      {showInfo && selectedRoute && (
         <Source type="geojson" data={selectGeometry}>
             <Layer 
               type="line" 
               paint={{
-                'line-color': "purple",
+                'line-color': selectedRoute.type == "Jeepney" ? 'red' : 'teal',
                 'line-width': 4,
                 'line-opacity': 1,
-              }} />
+                }} />
         </Source>
       )}
     </Map>
@@ -202,6 +248,7 @@ const quezonCityBoundingBox = [[121.01869583129883,14.604514925547997],[121.0907
         <button className="close-button" onClick={handleClosePopup}> X </button>
         <h1>Nearby Routes:</h1>
         { loading ? (<p>Fetching nearby routes....</p>) : (null)}
+        { error ? (<p>Failed to fetch routes...</p>) : (null)}
         {routes.length <= 0 && !loading ? (
           <p>There are no nearby routes.</p>
          ) : (
@@ -223,9 +270,13 @@ const quezonCityBoundingBox = [[121.01869583129883,14.604514925547997],[121.0907
     )} 
 
     {showInfo && (
-      <RouteInfo selectRoute={selectedRoute} onClosePopup={handleClosePopup}/>
-    )}
-  
+      <RouteInfo
+      selectRoute={selectedRoute}
+      onClosePopup={handleClosePopup}
+      differentRoute={handleListItemClick}
+      enterHighlight={handleRouteNameMouseEnter}
+      exitHighlight={handleRouteNameMouseLeave}
+      />    )}
     </>
   );
 }

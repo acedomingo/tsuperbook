@@ -67,7 +67,7 @@ const Wrapper = styled.div`
 `;
 
 const Input = styled.input`
-  width: 1000px;
+  width: 1100px;
   background: #FFFCF4;
   border: none;
   padding: 10px 20px;
@@ -84,7 +84,7 @@ const Input = styled.input`
 const SuggestionWrapper = styled.div`
   background: white;
   position: absolute;
-  width: 1000px;
+  width: 1100px;
   padding: 10px 20px;
   border-radius: 0px 0px 10px 10px;
   z-index: 1000;
@@ -92,5 +92,5 @@ const SuggestionWrapper = styled.div`
 
 const Suggestion = styled.p`
   cursor: pointer;
-  max-width: 1000px;
+  max-width: 1100px;
 `;

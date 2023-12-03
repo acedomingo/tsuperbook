@@ -49,7 +49,7 @@ const PathFinding = () => {
             setItineraryOpen(true);
             setAskOpen(false);
 
-            if (data.plan.itineraries[0].legs.length <= 1)
+            if (data.plan.itineraries[0].legs.length <= 1 || !data)
               setNoItineraries(true);
 
             console.log("No Itineraries? ", noItineraries);
@@ -252,7 +252,7 @@ const PathFinding = () => {
                                 <p>Mode: WALK</p>
                               ) : (
                                 <>
-                                  <Link className='routeName' to={`/?selectRoute=${String(leg.route.longName)}`}>
+                                  <Link className='routeName' to={`/?selectRoute=${encodeURIComponent(String(leg.route.longName))}`}>
                                     <p>Route: {leg.route.longName}</p>
                                   </Link>
                                   <p>Mode: {leg.route.gtfsId.includes('PUJ') ? 'Jeepney' : 'Bus'}</p>

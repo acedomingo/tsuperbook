@@ -82,11 +82,6 @@ const PathFinding = () => {
   
         setLegGeometries(newLegGeometries);
         }
-        else {
-          setNoItineraries(true);
-        }
-      } else {
-        setNoItineraries(true);
       }
     }, [data, currentLegIndex]);
   
@@ -158,47 +153,47 @@ const PathFinding = () => {
             mapStyle="mapbox://styles/mapbox/light-v11"
             maxBounds={quezonCityBoundingBox}
             >
-           {itineraryOpen && !noItineraries && (
-              <>
-                {/* Your existing components and code */}
-                {legGeometries.map(({ coordinates, highlighted, originCoords, destinationCoords }, index) => (
-                  <React.Fragment key={index}>
-                    <Source
-                      type="geojson"
-                      data={{ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates } }}
-                    >
-                      <Layer
-                        id={`leg-geometry-${index}`}
-                        type="line"
-                        paint={{
-                          'line-color': highlighted ? '#800080' : '#088',
-                          'line-width': highlighted ? 4 : 2,
-                        }}
-                      />
-                    </Source>
+           {itineraryOpen && (
+            <>
+              {/* Your existing components and code */}
+              {legGeometries.map(({ coordinates, highlighted, originCoords, destinationCoords }, index) => (
+                <React.Fragment key={index}>
+                  <Source
+                    type="geojson"
+                    data={{ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates } }}
+                  >
+                    <Layer
+                      id={`leg-geometry-${index}`}
+                      type="line"
+                      paint={{
+                        'line-color': highlighted ? '#800080' : '#088',
+                        'line-width': highlighted ? 4 : 2,
+                      }}
+                    />
+                  </Source>
 
-                    {/* Conditional rendering of markers only for the highlighted leg */}
-                    {highlighted && (
-                      <>
-                        <Marker
-                          latitude={originCoords[1]}
-                          longitude={originCoords[0]}
-                        >
-                          <div className="marker start-marker">Start</div>
-                        </Marker>
+                  {/* Conditional rendering of markers only for the highlighted leg */}
+                  {highlighted && (
+                    <>
+                      <Marker
+                        latitude={originCoords[1]}
+                        longitude={originCoords[0]}
+                      >
+                        <div className="marker start-marker">Start</div>
+                      </Marker>
 
-                        <Marker
-                          latitude={destinationCoords[1]}
-                          longitude={destinationCoords[0]}
-                        >
-                          <div className="marker end-marker">End</div>
-                        </Marker>
-                      </>
-                    )}
-                  </React.Fragment>
-                ))}
-              </>
-            )}
+                      <Marker
+                        latitude={destinationCoords[1]}
+                        longitude={destinationCoords[0]}
+                      >
+                        <div className="marker end-marker">End</div>
+                      </Marker>
+                    </>
+                  )}
+                </React.Fragment>
+              ))}
+            </>
+          )}
 
             </Map>
         </div>
@@ -241,7 +236,7 @@ const PathFinding = () => {
               {data.plan.itineraries.map((itinerary, index) => (
                 <div key={index}>
                   <h2>Your Trip</h2>
-                  {noItineraries ? (
+                  {itinerary.legs.length <= 1 ? (
                     <>
                     <p>No itineraries found</p>
                    

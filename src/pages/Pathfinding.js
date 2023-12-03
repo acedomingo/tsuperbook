@@ -100,7 +100,6 @@ const PathFinding = () => {
         }
         else  {
             setShowError(true);
-            console.log("An error occured");
         }
     };
 
@@ -126,10 +125,6 @@ const PathFinding = () => {
 
     function refreshPage(){ 
       window.location.reload(); 
-    }
-
-    function clickHandler(e){
-      e.preventDefault()
     }
 
     return (
@@ -195,31 +190,36 @@ const PathFinding = () => {
             </Map>
         </div>
         
-        { askOpen && (
-            <>
-            <div style={{width: window.innerWidth, height: window.innerHeight, zIndex: 5, backgroundColor: '#FFE133', opacity: 0.5, position:'absolute'}}></div>
-            <div className="origDest" style={{zIndex: 10}}>
-            {!loading ? (
+        {askOpen && (
+          <>
+            <div style={{ width: window.innerWidth, height: window.innerHeight, zIndex: 5, backgroundColor: '#FFE133', opacity: 0.5, position: 'absolute' }}></div>
+            <div className="origDest" style={{ zIndex: 10 }}>
+              {!loading ? (
                 <>
-                    <h1><center>Plan your Itinerary</center></h1>
-                    <Link to="/" className="close-button" style={{textDecoration: 'none', right:'0px'}}> X </Link>
-                    <h3>From:</h3>
-                    <InputField onLocationSelected={handleOriginSelected} placeholder="Origin"/>
-                    <h3>To:</h3>
-                    <InputField onLocationSelected={handleDestinationSelected} placeholder="Destination" />
-                    <h3></h3>
-                    <button onClick={findPath} className='findButton'>Find Path</button>
+                  <h1><center>Plan your Itinerary</center></h1>
+                  <Link to="/" className="close-button" style={{ textDecoration: 'none', right: '0px' }}> X </Link>
+                  <div className="input-field-container">
+                    <div>
+                      <h3>From:</h3>
+                      <InputField onLocationSelected={handleOriginSelected} placeholder="Origin" />
+                    </div>
+                    <div>
+                      <h3>To:</h3>
+                      <InputField onLocationSelected={handleDestinationSelected} placeholder="Destination" />
+                    </div>
+                    <div>
+                      <button onClick={findPath} className='findButton'>Find Path</button>
+                    </div>
+                  </div>
                 </>
-                
-            ) : (
+              ) : (
                 <>
-                    <p>Planning your Trip...</p>
+                  <p>Planning your Trip...</p>
                 </>
-            )}
+              )}
             </div>
-            </>
-        )
-        }
+          </>
+        )}
 
         {itineraryOpen && (
           <div className="itinerary">
@@ -258,29 +258,23 @@ const PathFinding = () => {
                           )}
                         </>
                       ))}
-                      {/* Navigation buttons */}
+                     <div className="page-info">
                       <button className='arrow' onClick={handlePreviousLeg} disabled={currentLegIndex === 0}>
                         ←
                       </button>
-                      <p style={{position: 'absolute', left:'125px', bottom: '1px'}}>Page {currentLegIndex+1} out of {itinerary.legs.length}</p>
-                      <button className='arrow' onClick={handleNextLeg} disabled={currentLegIndex === itinerary.legs.length - 1} style={{position: 'absolute', right:'15px'}}>
+                      <p>Page {currentLegIndex + 1} out of {itinerary.legs.length}</p>
+                      <button className='arrow' onClick={handleNextLeg} disabled={currentLegIndex === itinerary.legs.length - 1}>
                         →
                       </button>
+                    </div>
                     </>
                   )}
                 </div>
               ))}
-               <button onClick={refreshPage} className='findButton' style={{textDecoration: 'none', position: 'relative', top: 100 }}> Plan another trip </button>
+               <button onClick={refreshPage} className='findButton' style={{textDecoration: 'none', position: 'relative', top: 5 }}> Plan another trip </button>
             </div>
           </div>
         )}
-
-        { showError && (
-            <div className="pop-up">
-            </div>
-        )
-        }
-
         
     </div>
     </>

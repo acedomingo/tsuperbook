@@ -1,11 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const Tile = ({ title, content }) => {
+const Tile = ({ title, content, routeName }) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate(`/?selectRoute=${title}`);
+    navigate(`/?selectRoute=${encodeURIComponent(title)}`);
     console.log("Clicked:", title);
   };
 

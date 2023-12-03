@@ -59,7 +59,7 @@ const PathFinding = () => {
 
     useEffect(() => {
       // Process leg geometries when data is available
-      if (data && data.plan && data.plan.itineraries) {
+      if (data && data.plan && data.plan.itineraries  && data.plan.itineraries.length > 0) {
         const legs = data.plan.itineraries[0].legs || [];
 
         if (legs.length > 1) {
@@ -82,6 +82,11 @@ const PathFinding = () => {
   
         setLegGeometries(newLegGeometries);
         }
+        else {
+          setNoItineraries(true);
+        }
+      } else {
+        setNoItineraries(true);
       }
     }, [data, currentLegIndex]);
   
@@ -107,6 +112,12 @@ const PathFinding = () => {
         setShowError(false);
     }
 
+    const planAnotherTrip = () => {
+      setItineraryOpen(false);
+      setAskOpen(true);
+      setCurrentLegIndex(0);
+    }
+
     const handleOriginSelected = (location) => {
         setOrigin(location);
     };
@@ -123,9 +134,6 @@ const PathFinding = () => {
         setCurrentLegIndex((prevIndex) => (prevIndex > 0 ? prevIndex - 1 : prevIndex));
     };
 
-    function refreshPage(){ 
-      window.location.reload(); 
-    }
 
     return (
     <>
@@ -150,43 +158,48 @@ const PathFinding = () => {
             mapStyle="mapbox://styles/mapbox/light-v11"
             maxBounds={quezonCityBoundingBox}
             >
-           {legGeometries.map(({ coordinates, highlighted, originCoords, destinationCoords }, index) => (
-              <React.Fragment key={index}>
-                <Source
-                  type="geojson"
-                  data={{ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates } }}
-                >
-                  <Layer
-                    id={`leg-geometry-${index}`}
-                    type="line"
-                    paint={{
-                      'line-color': highlighted ? '#800080' : '#088',
-                      'line-width': highlighted ? 4 : 2,
-                    }}
-                  />
-                </Source>
-
-                {/* Conditional rendering of markers only for the highlighted leg */}
-                {highlighted && (
-                  <>
-                    <Marker
-                      latitude={originCoords[1]}
-                      longitude={originCoords[0]}
+           {itineraryOpen && !noItineraries && (
+              <>
+                {/* Your existing components and code */}
+                {legGeometries.map(({ coordinates, highlighted, originCoords, destinationCoords }, index) => (
+                  <React.Fragment key={index}>
+                    <Source
+                      type="geojson"
+                      data={{ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates } }}
                     >
-                      <div className="marker start-marker">Start</div>
-                    </Marker>
+                      <Layer
+                        id={`leg-geometry-${index}`}
+                        type="line"
+                        paint={{
+                          'line-color': highlighted ? '#800080' : '#088',
+                          'line-width': highlighted ? 4 : 2,
+                        }}
+                      />
+                    </Source>
 
-                    <Marker
-                      latitude={destinationCoords[1]}
-                      longitude={destinationCoords[0]}
+                    {/* Conditional rendering of markers only for the highlighted leg */}
+                    {highlighted && (
+                      <>
+                        <Marker
+                          latitude={originCoords[1]}
+                          longitude={originCoords[0]}
+                        >
+                          <div className="marker start-marker">Start</div>
+                        </Marker>
 
-                    >
-                      <div className="marker end-marker">End</div>
-                    </Marker>
-                  </>
-                )}
-              </React.Fragment>
-            ))}
+                        <Marker
+                          latitude={destinationCoords[1]}
+                          longitude={destinationCoords[0]}
+                        >
+                          <div className="marker end-marker">End</div>
+                        </Marker>
+                      </>
+                    )}
+                  </React.Fragment>
+                ))}
+              </>
+            )}
+
             </Map>
         </div>
         
@@ -228,7 +241,7 @@ const PathFinding = () => {
               {data.plan.itineraries.map((itinerary, index) => (
                 <div key={index}>
                   <h2>Your Trip</h2>
-                  {itinerary.legs.length <= 1 ? (
+                  {noItineraries ? (
                     <>
                     <p>No itineraries found</p>
                    
@@ -271,10 +284,20 @@ const PathFinding = () => {
                   )}
                 </div>
               ))}
-               <button onClick={refreshPage} className='findButton' style={{textDecoration: 'none', position: 'relative', top: 5 }}> Plan another trip </button>
+               <button onClick={planAnotherTrip} className='findButton' style={{textDecoration: 'none', position: 'relative', top: 5 }}> Plan another trip </button>
             </div>
           </div>
         )}
+
+        { (showError || error) && (
+            <div className="popup" style={{ zIndex: 1000, width: 'fit-content', height: 300, position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+              <button className="close-button" onClick={closeError} style={{zIndex:10000}}> X </button>
+              <div style={{ textAlign: 'center', marginTop: 100, maxWidth: 500 }}>
+                {error ? `Error: ${error.message}` : 'Failed to fetch itineraries...'}
+              </div>
+            </div>
+        )
+        }
         
     </div>
     </>

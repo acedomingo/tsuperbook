@@ -1,7 +1,5 @@
 import { gql } from "@apollo/client";
 
-
-
 export const GET_ROUTES = gql `
 # Gets the information on all transit routes from OTP
     query getRoutes {
@@ -24,30 +22,20 @@ query Route($route_id: String!){
                 longName
             }
         }
-        trips {
-            tripGeometry {
-                length
-                points
-            }
-        }
     }
 }
 `
 
 export const NEARBY_ROUTES = gql `
 query nearbyRoutes($lat: Float!, $lon: Float!) {
-    stopsByRadius(lat: $lat, lon: $lon, radius: 1000){
+    stopsByRadius(lat: $lat, lon: $lon, radius: 750){
         edges {
             node {
                 stop {
                     routes {
                         longName
                         gtfsId
-                        trips {
-                            tripGeometry {
-                            points
-                            }
-                        }
+                        color
                     }
                 }
             }
@@ -57,47 +45,48 @@ query nearbyRoutes($lat: Float!, $lon: Float!) {
 `
 
 export const TRIP_PLANNING = gql `
-query planTrip($from: String, $to: String){
-    plan(
-        fromPlace: $from
-        toPlace: $to
-        waitReluctance: 0
-        arriveBy: false
-        transportModes: [{mode: BUS}]
-        time: "00:00:00"
-        numItineraries: 3
-        walkReluctance: 4
-    ) {
-        itineraries {
-            walkDistance
-            legs {
-                mode
-                distance
-                from {
-                    lat
-                    lon
-                    name
-                    stop {
-                        code
-                        name
-                    }
-                }
-                to {
-                    lat
-                    lon
-                    name
-                }
-                route {
-                    longName
-                    gtfsId
-                }
-                distance
-                legGeometry {
-                    length
-                    points
-                }
-            }
+query planTrip($origin: String, $destination: String){
+  plan(
+    fromPlace: $origin
+    toPlace: $destination
+    waitReluctance: 0
+    arriveBy: false
+    transportModes: [{mode: BUS}]
+    time: "00:00:00"
+    numItineraries: 1
+    walkReluctance: 4
+    maxWalkDistance:500
+  ) {
+    itineraries {
+      walkDistance
+      legs {
+        mode
+        distance
+        from {
+          lat
+          lon
+          name
+          stop {
+            code
+            name
+          }
         }
+        to {
+          lat
+          lon
+          name
+        }
+        route {
+          longName
+          gtfsId
+        }
+        distance
+        legGeometry {
+          length
+          points
+        }
+      }
     }
+  }
 }
 `

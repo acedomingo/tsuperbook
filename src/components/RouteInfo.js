@@ -3,8 +3,12 @@ import '../App.css';
 import { ROUTE_DETAILS } from '../graphql/Queries';
 import { useQuery } from '@apollo/client';
 
-const RouteInfo = ({ selectRoute, onClosePopup }) => {
+const RouteInfo = ({ selectRoute, onClosePopup, differentRoute, enterHighlight, exitHighlight }) => {
   console.log('Route Info:', selectRoute);
+
+  const handleClick = (val) => {
+    console.log("Route:", val)
+  }
 
   // Use optional chaining to prevent errors when selectRoute is null
   const { loading, error, data } = useQuery(ROUTE_DETAILS, {
@@ -18,12 +22,13 @@ const RouteInfo = ({ selectRoute, onClosePopup }) => {
   useEffect(() => {
     if (data) {
       console.log('Query:', data);
-
+  
       // Use optional chaining to safely access properties
       const stopsData = data.route?.stops || [];
       setStops(stopsData);
-
+  
       // Extract nearby routes from each stop and remove duplicates
+      console.log("Overlapping routes:", nearbyRoutes);
       const uniqueRoutesSet = new Set();
       const allNearbyRoutes = stopsData.flatMap((stop) =>
         stop.routes?.map((route) => {
@@ -35,12 +40,16 @@ const RouteInfo = ({ selectRoute, onClosePopup }) => {
           return null;
         }) || []
       );
-
-      setNearbyRoutes(allNearbyRoutes.filter(Boolean));
-      console.log('Nearby Routes:', allNearbyRoutes);
+  
+      // Filter out routes with the same name as selectRoute.name
+      const filteredNearbyRoutes = allNearbyRoutes.filter(
+        (route) => route && route.name !== selectRoute.name
+      );
+  
+      setNearbyRoutes(filteredNearbyRoutes);
+      console.log('Nearby Routes:', filteredNearbyRoutes);
     }
-  }, [data]);
-
+  }, [data, selectRoute]);
   // If selectRoute is null, return null or an empty fragment
   if (!selectRoute) {
     return null;
@@ -49,8 +58,7 @@ const RouteInfo = ({ selectRoute, onClosePopup }) => {
   return (
     <div className="routeInfo">
       <button className="close-button" onClick={onClosePopup}>
-        {' '}
-        X{' '}
+      X
       </button>
       <h1>{selectRoute.name}</h1>
       <h2>{`(${selectRoute.type})`}</h2>
@@ -71,7 +79,15 @@ const RouteInfo = ({ selectRoute, onClosePopup }) => {
       <h3>Overlapping Routes</h3>
       <ul>
         {nearbyRoutes?.map((route) => (
-          <li key={route.id}>{route.name}</li>
+          <li
+          key={route.id}
+          onClick={() => differentRoute(route)}
+          onMouseEnter={() => enterHighlight(route)} 
+          onMouseLeave={exitHighlight}
+          className="routeName"
+          >
+            {route.name}
+          </li>
         ))}
       </ul>
     </div>

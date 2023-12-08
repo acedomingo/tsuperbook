@@ -68,7 +68,7 @@ const RouteInfo = ({ selectRoute, onClosePopup, differentRoute, enterHighlight, 
           <li key={stop.name}>{stop.name}</li>
         ))}
       </ul>
-      <h3>Visitable Landmarks</h3>
+      <h3>Landmarks</h3>
       <ul>
         {landmarks.length > 0 ? (
           landmarks.map((landmark) => <li key={landmark.id}>{landmark.name}</li>)

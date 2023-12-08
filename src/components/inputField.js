@@ -42,7 +42,9 @@ const InputField = ({ onLocationSelected, placeholder }) => {
       />
       {address.suggestions?.length > 0 && (
         <SuggestionWrapper>
-          {address.suggestions.map((suggestion, index) => {
+          {address.suggestions
+            .sort((a, b) => a.place_name.localeCompare(b.place_name))
+            .map((suggestion, index) => {
             return (
               <Suggestion
                 key={index}

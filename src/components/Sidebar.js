@@ -2,13 +2,13 @@ import React from 'react';
 import "../App.css";
 import { SidebarData } from './SidebarData';
 
-const Sidebar = ({ onClose }) => {
+const Sidebar = ({ onClose, isOpen }) => {
     const handleClose = () => {
         onClose();
     };
 
     return (
-        <div className="Sidebar">
+        <div className={`Sidebar ${isOpen ? 'sidebar-open' : ''}`}>
             <div style={{ height: 46 }} />
             <ul className="SidebarList">
                 {SidebarData.map((val, key) => {

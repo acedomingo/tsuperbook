@@ -73,7 +73,8 @@ const quezonCityBoundingBox = [[121.01869583129883,14.604514925547997],[121.0907
     if (selectedRoute) {
       console.log("New Route:", selectedRoute)
       setShowPopup(false);
-      setSelectGeometry(routeDataMap["LTFRB_"+selectedRoute.id]);      setShowInfo(false);
+      setSelectGeometry(routeDataMap["LTFRB_"+selectedRoute.id]);      
+      setShowInfo(false);
       setShowInfo(true);
     } 
     else {
@@ -183,7 +184,7 @@ const quezonCityBoundingBox = [[121.01869583129883,14.604514925547997],[121.0907
         zoom: 14
       }}
       mapboxAccessToken="pk.eyJ1IjoiYWNlZG9taW5nbyIsImEiOiJjbGpvOTB3ZjMwMWFiM2dxbDc5cjU0Y2FvIn0.aJC6z1-KjLBiG15MUfzO4Q"
-      mapStyle="mapbox://styles/mapbox/light-v11"
+      mapStyle="mapbox://styles/mapbox/streets-v12"
       onDblClick={handleClick}
       maxBounds={quezonCityBoundingBox}
     >
@@ -203,7 +204,7 @@ const quezonCityBoundingBox = [[121.01869583129883,14.604514925547997],[121.0907
               <Layer 
                 type="line" 
                 paint={{
-                  'line-color': `#${route.color}`,
+                  'line-color': cleanGtfsId.includes("PUJ") ? "#DC143C" : "#003366",
                   'line-width': 2,
                   'line-opacity':  highlightedRouteGeoJson && highlightedRouteGeoJson !== geojsonData ? 0.15 : 0.7,
                 }} />
@@ -219,7 +220,7 @@ const quezonCityBoundingBox = [[121.01869583129883,14.604514925547997],[121.0907
           <Layer
             type="line"
             paint={{
-              'line-color': 'purple',
+              'line-color': '#9370DB', // #C8A2C8 #9400D3 #8B008B
               'line-width': 4,
               'line-opacity': 1,
             }}
@@ -232,7 +233,7 @@ const quezonCityBoundingBox = [[121.01869583129883,14.604514925547997],[121.0907
             <Layer 
               type="line" 
               paint={{
-                'line-color': selectedRoute.type == "Jeepney" ? 'red' : 'teal',
+                'line-color': selectedRoute.type == "Jeepney" ? '#DC143C' : '#003366', // #FF2400
                 'line-width': 4,
                 'line-opacity': 1,
                 }} />

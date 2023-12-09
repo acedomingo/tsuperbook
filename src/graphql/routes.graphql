@@ -1,9 +1,0 @@
-
-# Gets the information on all transit routes from OTP
-
-query getRoutes {
-    routes {
-        gtfsId
-        longName
-    }
-}

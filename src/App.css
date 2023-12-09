@@ -146,7 +146,7 @@ body {
 
 .Tile {
   background-color: #ffffffb6;
-  padding: 20px;
+  padding: 10px;
   margin: 20px; 
   margin-bottom: 10px;
   border: 1px solid #ccc;
@@ -154,18 +154,21 @@ body {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   width: calc(30%); 
   min-width: 200px;
-  height: 200px; /* Set the desired height for the tiles */
+  height: 100px; /* Set the desired height for the tiles */
   display: flex;
   flex-direction: column; /* Ensure content starts from the top */
   justify-content: space-between;
 }
 
 .Tile h2 {
- margin: 0;
- font-size: 1.5rem;
- color: 333;
- text-align: center;
- height: 100vh;
+  margin: auto;
+  font-size: 1.5rem;
+  color: 333;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 }
 
 .Tile p {

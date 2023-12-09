@@ -23,7 +23,7 @@ const BusRoutes = () => {
         <div className="Display">
 
             <Navbar onSidebarToggle={handleSidebarToggle} />
-            <div className={`Content ${isSidebarOpen ? 'shifted' : ''}`}>
+            <div className={`Content ${isSidebarOpen ? 'shifted' : ''}`} style={{backgroundColor: 'rgba(247,201,110, 0.5)'}}>
                 {isSidebarOpen && <Sidebar onClose={handleSidebarToggle} />}
                 <TileGrid tiles={tiles} />
             </div>

@@ -150,7 +150,7 @@ const PathFinding = () => {
                 zoom: 14
             }}
             mapboxAccessToken="pk.eyJ1IjoiYWNlZG9taW5nbyIsImEiOiJjbGpvOTB3ZjMwMWFiM2dxbDc5cjU0Y2FvIn0.aJC6z1-KjLBiG15MUfzO4Q"
-            mapStyle="mapbox://styles/mapbox/light-v11"
+            mapStyle="mapbox://styles/mapbox/streets-v12"
             maxBounds={quezonCityBoundingBox}
             >
            {itineraryOpen && (
@@ -166,7 +166,7 @@ const PathFinding = () => {
                       id={`leg-geometry-${index}`}
                       type="line"
                       paint={{
-                        'line-color': highlighted ? '#800080' : '#088',
+                        'line-color': highlighted ? '#8A2BE2' : '#088',
                         'line-width': highlighted ? 4 : 2,
                       }}
                     />

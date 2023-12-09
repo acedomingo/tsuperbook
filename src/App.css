@@ -38,7 +38,13 @@ body {
   padding: 0;
   border: 0;
   background: 0;
-  font-size: 40px;
+  height: 60px;
+  width: 40px;
+}
+
+.MenuButton svg {
+  width: 100%; 
+  height: auto;
 }
 
 .Navbar {
@@ -57,7 +63,7 @@ body {
 }
 
 .NavbarTitle {
-  font-size: 2rem;
+  font-size: 2.4rem;
 }
 
 .Navbar ul {
@@ -81,6 +87,7 @@ body {
   height: 100vh;
   overflow: hidden;
   z-index: 500;
+  transition: transform 0.3s ease-in-out;
 }
 
 .SidebarList {
@@ -89,6 +96,7 @@ body {
   padding: 0;
   margin: 0;
   background-color: #FFC133;
+  padding-top: 0.9rem;
 }
 
 .SidebarList .Row {
@@ -138,24 +146,39 @@ body {
 
 .Tile {
   background-color: #ffffffb6;
-  padding: 10px;
+  padding: 20px;
   margin: 20px; 
   margin-bottom: 10px;
-  border: 1px solid #000000;
-  border-radius: 5px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   width: calc(30%); 
+  min-width: 200px;
   height: 200px; /* Set the desired height for the tiles */
   display: flex;
   flex-direction: column; /* Ensure content starts from the top */
+  justify-content: space-between;
 }
 
 .Tile h2 {
  margin: 0;
+ font-size: 1.5rem;
+ color: 333;
+ text-align: center;
+ height: 100vh;
 }
 
 .Tile p {
   margin: 0;
+  color: #666;
+  font-size: 1rem;
+}
+
+.Tile:hover {
+  transform: translateY(-5px);
+  transition: transform 0.3s ease-in-out;
+  color: #FF2400; 
+  cursor: pointer;
 }
 
 .Row #icon {

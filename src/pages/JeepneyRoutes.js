@@ -21,7 +21,7 @@ const JeepneyRoutes = () => {
     }));
 
     return (
-        <div className="Display">
+        <div className="Display" style={{backgroundColor: 'rgba(247,201,110, 0.5)'}}>
            
             <Navbar onSidebarToggle={handleSidebarToggle} />
             <div className={`Content ${isSidebarOpen ? 'shifted' : ''}`}>

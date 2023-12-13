@@ -47,6 +47,7 @@ function Home(props) {
     doubleClickZoom: false,
     minZoom: 14,
     maxZoom: 17,
+    dragRotate: false
 });
 
 const quezonCityBoundingBox = [[121.01869583129883,14.604514925547997],[121.090736203863,14.694524072088583]];
@@ -164,6 +165,13 @@ const quezonCityBoundingBox = [[121.01869583129883,14.604514925547997],[121.0907
     setIsSidebarOpen(!isSidebarOpen);
   };
 
+  const recenterMap = () => {
+    map.flyTo({
+      center: initialViewState,
+      essential: true,
+    });
+  };
+
   return (
     <>
     <div className="Display">
@@ -181,14 +189,18 @@ const quezonCityBoundingBox = [[121.01869583129883,14.604514925547997],[121.0907
       initialViewState={{
         longitude: 121.04042520880047,
         latitude: 14.649743779882588,
-        zoom: 14
+        zoom: 14,
       }}
       mapboxAccessToken="pk.eyJ1IjoiYWNlZG9taW5nbyIsImEiOiJjbGpvOTB3ZjMwMWFiM2dxbDc5cjU0Y2FvIn0.aJC6z1-KjLBiG15MUfzO4Q"
       mapStyle="mapbox://styles/mapbox/streets-v12"
       onDblClick={handleClick}
       maxBounds={quezonCityBoundingBox}
     >
-      
+      <div>
+         <div ref={Map} style={{ width: '100%', height: '400px' }} />
+         <button onClick={recenterMap}>Recenter Map</button>
+      </div>
+
       {showPopup && (
         <Marker latitude={latitude} longitude={longitude}></Marker>
       )}
@@ -206,7 +218,7 @@ const quezonCityBoundingBox = [[121.01869583129883,14.604514925547997],[121.0907
                 paint={{
                   'line-color': cleanGtfsId.includes("PUJ") ? "#DC143C" : "#003366",
                   'line-width': 2,
-                  'line-opacity':  highlightedRouteGeoJson && highlightedRouteGeoJson !== geojsonData ? 0.15 : 0.7,
+                  'line-opacity':  highlightedRouteGeoJson && highlightedRouteGeoJson !== geojsonData ? 0.3 : 0.7,
                 }} />
             </Source>
           );

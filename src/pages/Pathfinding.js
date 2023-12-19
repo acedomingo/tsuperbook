@@ -21,6 +21,7 @@ const PathFinding = () => {
         doubleClickZoom: false,
         minZoom: 14,
         maxZoom: 17,
+        dragRotate: false
     });
 
     const quezonCityBoundingBox = [[121.01869583129883,14.604514925547997],[121.090736203863,14.694524072088583]];
@@ -143,7 +144,7 @@ const PathFinding = () => {
             <Map
             id="map"
             {...settings}
-            style={{ width: window.innerWidth, height: window.innerHeight, zIndex: 0 }}
+            style={{ width: '100vw', height: '100vh', zIndex: 0 }}
             initialViewState={{
                 longitude: 121.04042520880047,
                 latitude: 14.649743779882588,
@@ -200,7 +201,7 @@ const PathFinding = () => {
         
         {askOpen && (
           <>
-            <div style={{ width: window.innerWidth, height: window.innerHeight, zIndex: 5, backgroundColor: '#FFE133', opacity: 0.5, position: 'absolute' }}></div>
+            <div style={{ width: '100vw', height: '100vh', zIndex: 5, backgroundColor: '#FFE133', opacity: 0.5, position: 'absolute' }}></div>
             <div className="origDest" style={{ zIndex: 10 }}>
               {!loading ? (
                 <>

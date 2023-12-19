@@ -8,7 +8,7 @@ import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import RouteData from "../components/RouteData";
 import RouteInfo from '../components/RouteInfo';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 // -----------------------------
 
@@ -24,8 +24,7 @@ import PUJ4 from '../routes/LTFRB_PUJ0004.geojson';
 import PUJ5 from '../routes/LTFRB_PUJ0005.geojson';
 import PUJ6 from '../routes/LTFRB_PUJ0006.geojson';
 
-function Home(props) {
-
+function Home() {
 
   // initializing routes
   const routeDataMap = {
@@ -48,9 +47,25 @@ function Home(props) {
     minZoom: 14,
     maxZoom: 17,
     dragRotate: false
-});
+  });
 
-const quezonCityBoundingBox = [[121.01869583129883,14.604514925547997],[121.090736203863,14.694524072088583]];
+  const [viewport, setViewport] = useState({
+    longitude: 121.04042520880047,
+    latitude: 14.649743779882588,
+    zoom: 14,
+  });
+
+  const handleViewportChange = (newViewport) => {
+    // Access the updated coordinates and zoom
+    console.log('Longitude:', newViewport.longitude);
+    console.log('Latitude:', newViewport.latitude);
+    console.log('Zoom:', newViewport.zoom);
+
+    // Update the state with the new viewport
+    setViewport(newViewport);
+  };
+
+  const quezonCityBoundingBox = [[121.01869583129883,14.604514925547997],[121.090736203863,14.694524072088583]];
   
   // ---------------- Nearby routes function -------------------------
 
@@ -62,6 +77,7 @@ const quezonCityBoundingBox = [[121.01869583129883,14.604514925547997],[121.0907
 
   // Route Information
   const location = useLocation();
+  const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
   const selectRouteParam = searchParams.get('selectRoute');
   const [showInfo, setShowInfo] = useState(false);
@@ -111,12 +127,12 @@ const quezonCityBoundingBox = [[121.01869583129883,14.604514925547997],[121.0907
   });
 
   async function handleClick(event) { // on double click
+    setShowPopup(true);
     setSelectedRoute(null);
     const coords = event.lngLat; // gets the coordinates of clicked location
     setLongitude(coords.lng);
     setLatitude(coords.lat);
     await getNearbyRoutes() // requests query
-    setShowPopup(true);
   }
 
   const handleListItemClick = (route) => { // Get the RouteData item that matches the route name.
@@ -159,6 +175,10 @@ const quezonCityBoundingBox = [[121.01869583129883,14.604514925547997],[121.0907
     setShowPopup(false);
     setShowInfo(false);
     setSelectedRoute(null);
+
+    const newSearch = new URLSearchParams(location.search);
+    newSearch.delete('selectRoute');
+    navigate(`?${newSearch.toString()}`);
   };
 
   const handleSidebarToggle = () => { // toggles sidebar
@@ -166,9 +186,10 @@ const quezonCityBoundingBox = [[121.01869583129883,14.604514925547997],[121.0907
   };
 
   const recenterMap = () => {
-    map.flyTo({
-      center: initialViewState,
-      essential: true,
+    setViewport({
+      longitude: 121.04042520880047,
+      latitude: 14.649743779882588,
+      zoom: 14,
     });
   };
 
@@ -185,21 +206,14 @@ const quezonCityBoundingBox = [[121.01869583129883,14.604514925547997],[121.0907
     <Map
       id="map"
       {...settings}
-      style={{ width: window.innerWidth, height: window.innerHeight }}
-      initialViewState={{
-        longitude: 121.04042520880047,
-        latitude: 14.649743779882588,
-        zoom: 14,
-      }}
+      style={{ width: '100vw', height: '100vh' }}
+      initialViewState={viewport}
+      onViewportChange={handleViewportChange}
       mapboxAccessToken="pk.eyJ1IjoiYWNlZG9taW5nbyIsImEiOiJjbGpvOTB3ZjMwMWFiM2dxbDc5cjU0Y2FvIn0.aJC6z1-KjLBiG15MUfzO4Q"
       mapStyle="mapbox://styles/mapbox/streets-v12"
       onDblClick={handleClick}
       maxBounds={quezonCityBoundingBox}
     >
-      <div>
-         <div ref={Map} style={{ width: '100%', height: '400px' }} />
-         <button onClick={recenterMap}>Recenter Map</button>
-      </div>
 
       {showPopup && (
         <Marker latitude={latitude} longitude={longitude}></Marker>
@@ -281,6 +295,8 @@ const quezonCityBoundingBox = [[121.01869583129883,14.604514925547997],[121.0907
         )}                                
       </div>
     )} 
+
+    <button className="recenter-button" onClick={recenterMap}>Recenter Map</button>
 
     {showInfo && (
       <RouteInfo

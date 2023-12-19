@@ -42,9 +42,7 @@ const InputField = ({ onLocationSelected, placeholder }) => {
       />
       {address.suggestions?.length > 0 && (
         <SuggestionWrapper>
-          {address.suggestions
-            .sort((a, b) => a.place_name.localeCompare(b.place_name))
-            .map((suggestion, index) => {
+          {address.suggestions.map((suggestion, index) => {
             return (
               <Suggestion
                 key={index}
@@ -69,7 +67,7 @@ const Wrapper = styled.div`
 `;
 
 const Input = styled.input`
-  width: 1100px;
+  width: 75vw;
   background: #FFFCF4;
   border: none;
   padding: 10px 20px;
@@ -86,7 +84,7 @@ const Input = styled.input`
 const SuggestionWrapper = styled.div`
   background: white;
   position: absolute;
-  width: 1100px;
+  width: 75vw;
   padding: 10px 20px;
   border-radius: 0px 0px 10px 10px;
   z-index: 1000;
@@ -94,5 +92,5 @@ const SuggestionWrapper = styled.div`
 
 const Suggestion = styled.p`
   cursor: pointer;
-  max-width: 1100px;
+  max-width: 75vw;
 `;

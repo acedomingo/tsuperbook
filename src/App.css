@@ -119,20 +119,6 @@ body {
   background-color: #FFE133;
 }
 
-/*
-
-.Content.shifted {
-  margin-left: 225px; /* Adjust this value according to your sidebar's width 
-}
-
-.shifted {
-  margin-left: 225px; /* shifts content when sidebar is opened 
-}
-
-.App.shifted {
-  margin-left: 0; /* Reset the margin for the content when sidebar is open 
-}
-*/
 
 .TileGrid {
   display: flex;
@@ -330,7 +316,7 @@ body {
   border-radius: 20px;
   box-shadow: 0 4px 5px rgba(0, 0, 0, 0.2);
   right: 2%;
-  top: 7%;
+  bottom: 3vw;
   overflow-y: scroll;
 }
 
@@ -371,4 +357,36 @@ body {
 
 .recenter-button:hover {
   background-color: #FFC133;
+}
+
+
+@media (max-width:600px) {
+  .popup {
+    width: 80vw;
+    right: 4vw;
+    font-size: 3.5vw;
+    z-index: 250;
+  }
+
+  .routeInfo {
+    width: 80vw;
+    position: absolute;
+    bottom: 20vw;
+    height: 50vw;
+    right: 4vw;
+    font-size: 3.5vw;
+    padding: 5vw;
+    z-index: 250;
+  }
+
+  .origDest {
+    font-size: 3.5vw;
+    padding: 5vw;
+  }
+
+  .itinerary {
+    font-size: 3vw;
+    height: fit-content;
+  }
+
 }

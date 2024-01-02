@@ -73,7 +73,7 @@ function Home() {
   };
 
   const mapRef = useRef(null);
-  const quezonCityBoundingBox = [[121.01869583129883,14.604514925547997],[121.090736203863,14.694524072088583]];
+  const quezonCityBoundingBox = [[120.97886149595988,14.593721268264154],[121.14790355785914,14.777687035029965]];
   const [enableStops, setEnableStops] = useState(false);
   
   // ---------------- Nearby routes function -------------------------
@@ -234,29 +234,39 @@ function Home() {
 
   const unhighlightStop = () => {
     setSelectedStopId(null);
-    if (forwardStopCoords && returnStopCoords) {
-      mapRef.current.getMap().fitBounds([
-        [forwardStopCoords[0] - 0.005, forwardStopCoords[1] - 0.005], // Adjust the bounds for a better view
-        [returnStopCoords[0]+ 0.005, returnStopCoords[1] + 0.005],
-      ], {
+    if (forwardStopCoords && returnStopCoords && mapRef.current) {
+      const minLat = Math.min(forwardStopCoords[1], returnStopCoords[1]);
+      const maxLat = Math.max(forwardStopCoords[1], returnStopCoords[1]);
+
+      const bounds = [
+        [Math.min(forwardStopCoords[0] - 0.007, returnStopCoords[0]), minLat  - 0.007],
+        [Math.max(forwardStopCoords[0] + 0.007, returnStopCoords[0]), maxLat + 0.007],
+      ];
+
+      mapRef.current.getMap().fitBounds(bounds, {
         padding: 20,
         duration: 1000,
       });
     }
   };
 
-  function handleForwardReturnStops(forwardStops, returnStops) {
+  const handleForwardReturnStops = (forwardStops, returnStops) => {
     console.log("Forward Stops Coordinates:", forwardStops);
     console.log("Return Stops Coordinates:", returnStops);
 
     setForwardStopCoords(forwardStops);
     setReturnStopCoords(returnStops);
 
-    if (forwardStops && returnStops) {
-      mapRef.current.getMap().fitBounds([
-        [forwardStops[0] - 0.005, forwardStops[1] - 0.005], // Adjust the bounds for a better view
-        [returnStops[0]+ 0.005, returnStops[1] + 0.005],
-      ], {
+    if (forwardStops && returnStops && mapRef.current) {
+      const minLat = Math.min(forwardStops[1], returnStops[1]);
+      const maxLat = Math.max(forwardStops[1], returnStops[1]);
+
+      const bounds = [
+        [Math.min(forwardStops[0] - 0.007, returnStops[0]), minLat  - 0.007],
+        [Math.max(forwardStops[0] + 0.007, returnStops[0]), maxLat + 0.007],
+      ];
+
+      mapRef.current.getMap().fitBounds(bounds, {
         padding: 20,
         duration: 1000,
       });

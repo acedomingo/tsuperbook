@@ -2,13 +2,13 @@ import React from 'react';
 import "../App.css";
 import { SidebarData } from './SidebarData';
 
-const Sidebar = ({ onClose, isOpen }) => {
+const Sidebar = ({ onClose }) => {
     const handleClose = () => {
         onClose();
     };
 
     return (
-        <div className={`Sidebar ${isOpen ? 'sidebar-open' : ''}`}>
+        <div className="Sidebar">
             <div style={{ height: 46 }} />
             <ul className="SidebarList">
                 {SidebarData.map((val, key) => {
@@ -17,11 +17,12 @@ const Sidebar = ({ onClose, isOpen }) => {
                             className="Row"
                             id={window.location.pathname === val.link ? "active" : ""}
                             onClick={() => {
-                                if (val.externalLink == true) {
+                                if (val.externalLink === true) {
                                     // Open external link in a new window
                                     window.open(val.link, '_blank');
                                 } else {
-                                    window.location.pathname = val.link;
+                                    // Use window.location.href to set the whole URL
+                                    window.location.href = val.link;
                                 }
                             }}
                         >

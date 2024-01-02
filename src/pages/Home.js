@@ -11,7 +11,6 @@ import RouteInfo from '../components/RouteInfo';
 import { useLocation, useNavigate } from 'react-router-dom';
 import GpsFixed from '@mui/icons-material/GpsFixed';
 import Place from '@mui/icons-material/Place';
-import * as turf from '@turf/turf';
 
 
 // -----------------------------
@@ -58,36 +57,6 @@ function Home() {
     latitude: 14.649743779882588,
     zoom: 14,
   });
-  
-  const getCenterCoordinate = (geometry) => {
-    if (!geometry || !geometry.features || geometry.features.length === 0) {
-      return null;
-    }
-  
-    let totalLng = 0;
-    let totalLat = 0;
-  
-    geometry.features.forEach((feature) => {
-      const coords = feature.geometry.coordinates;
-      totalLng += coords[0];
-      totalLat += coords[1];
-    });
-  
-    const centerLng = totalLng / geometry.features.length;
-    const centerLat = totalLat / geometry.features.length;
-  
-    return [centerLng, centerLat];
-  };
-  
-  const flyToCenterCoordinate = (centerCoordinate) => {
-    if (mapRef.current && centerCoordinate) {
-      mapRef.current.getMap().flyTo({
-        center: centerCoordinate,
-        zoom: 15,
-        duration: 2000,
-      });
-    }
-  };
 
   const flyToSelectStop = (selectedStop) => {
     if (mapRef.current && selectedStop && selectedStop.geometries && selectedStop.geometries.geoJson) {
@@ -96,7 +65,7 @@ function Home() {
       if (coordinates && coordinates.length >= 2) {
         mapRef.current.getMap().flyTo({
           center: [coordinates[0], coordinates[1]],
-          zoom: 15,
+          zoom: 15.5,
           duration: 1000,
         });
       }
@@ -125,6 +94,8 @@ function Home() {
   const [selectedRoute, setSelectedRoute] = useState(null);
   const [selectedStop, setSelectedStop] = useState(null);
   const [selectedStopId, setSelectedStopId] = useState(null);
+  const [forwardStopCoords, setForwardStopCoords] = useState([]);
+  const [returnStopCoords, setReturnStopCoords] = useState([]);
   
 
   useEffect(() => {
@@ -141,6 +112,8 @@ function Home() {
     } 
     else {
       setSelectGeometry(null);
+      setForwardStopCoords(null);
+      setReturnStopCoords(null);
     }
     setHighlightedRouteGeoJson(null);
   }, [selectedRoute]);
@@ -150,29 +123,7 @@ function Home() {
       flyToSelectStop(selectedStop);      
       setSelectedStopId(selectedStop.gtfsId);
     }
-  }, [selectedStop])
-
-  useEffect(() => {
-    const fetchSelectGeometry = async () => {
-      if (selectGeometry) {
-        try {
-          const response = await fetch(selectGeometry);
-          const geojsonData = await response.json();
-  
-          // Now you have the geojson data, you can calculate the center coordinate
-          const centerCoordinate = getCenterCoordinate(geojsonData);
-  
-          // Fly to the center coordinate
-          flyToCenterCoordinate(centerCoordinate);
-        } catch (error) {
-          console.error('Error fetching GeoJSON data:', error);
-        }
-      }
-    };
-  
-    fetchSelectGeometry();
-  }, [selectGeometry]);
-  
+  }, [selectedStop])  
   
   useEffect(() => {
     console.log("Pathfinding Route:", selectRouteParam)
@@ -237,6 +188,16 @@ function Home() {
       console.log("Route Data Item:", selectedRoute);
       console.log("LTFRB_" + routeDataItem.id, selectGeometry);
     }
+
+    // Refresh RouteInfo popup and scroll to the top
+    setShowInfo(false);
+    setTimeout(() => {
+      setShowInfo(true);
+      const routeInfoPopup = document.getElementById('routeInfoPopup');
+      if (routeInfoPopup) {
+        routeInfoPopup.scrollTop = 0;
+      }
+    }, 100);
   };
   
   // -----------------------------------------------------------
@@ -273,6 +234,33 @@ function Home() {
 
   const unhighlightStop = () => {
     setSelectedStopId(null);
+    if (forwardStopCoords && returnStopCoords) {
+      mapRef.current.getMap().fitBounds([
+        [forwardStopCoords[0] - 0.005, forwardStopCoords[1] - 0.005], // Adjust the bounds for a better view
+        [returnStopCoords[0]+ 0.005, returnStopCoords[1] + 0.005],
+      ], {
+        padding: 20,
+        duration: 1000,
+      });
+    }
+  };
+
+  function handleForwardReturnStops(forwardStops, returnStops) {
+    console.log("Forward Stops Coordinates:", forwardStops);
+    console.log("Return Stops Coordinates:", returnStops);
+
+    setForwardStopCoords(forwardStops);
+    setReturnStopCoords(returnStops);
+
+    if (forwardStops && returnStops) {
+      mapRef.current.getMap().fitBounds([
+        [forwardStops[0] - 0.005, forwardStops[1] - 0.005], // Adjust the bounds for a better view
+        [returnStops[0]+ 0.005, returnStops[1] + 0.005],
+      ], {
+        padding: 20,
+        duration: 1000,
+      });
+    }
   };
 
   const handleRouteNameMouseEnter = (route) => { // when a nearby route is hovered, the route is highlighted on the map
@@ -298,6 +286,7 @@ function Home() {
     setSelectedRoute(null);
     setSelectedStop(null);
     setSelectedStopId(null);
+    
 
     const newSearch = new URLSearchParams(location.search);
     newSearch.delete('selectRoute');
@@ -354,6 +343,7 @@ function Home() {
        {routes.map((route) => {
         const cleanGtfsId = route.gtfsId.slice(2);
         const geojsonData = routeDataMap[cleanGtfsId];
+        console.log("GeojsonData", geojsonData);
         
         if (showPopup) {
           return (
@@ -471,6 +461,7 @@ function Home() {
 
     {showInfo && (
       <RouteInfo
+      id="routeInfoPopup"
       selectRoute={selectedRoute}
       onClosePopup={handleClosePopup}
       differentRoute={handleListItemClick}
@@ -479,6 +470,7 @@ function Home() {
       selectStop={setSelectStop}
       hoverStop={highlightStop}
       leaveStop={unhighlightStop}
+      onForwardReturnStops={handleForwardReturnStops}
       />)}
 
       {selectedStop && (

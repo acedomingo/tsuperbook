@@ -3,7 +3,7 @@ import '../App.css';
 import { ROUTE_DETAILS } from '../graphql/Queries';
 import { useQuery } from '@apollo/client';
 
-const RouteInfo = ({ selectRoute, onClosePopup, differentRoute, enterHighlight, exitHighlight, selectStop, hoverStop, leaveStop }) => {
+const RouteInfo = ({ selectRoute, onClosePopup, differentRoute, enterHighlight, exitHighlight, selectStop, hoverStop, leaveStop, onForwardReturnStops }) => {
   // Use optional chaining to prevent errors when selectRoute is null
   const { loading, error, data } = useQuery(ROUTE_DETAILS, {
     variables: { route_id: selectRoute?.id ? `1:LTFRB_${selectRoute.id}` : null },
@@ -25,6 +25,11 @@ const RouteInfo = ({ selectRoute, onClosePopup, differentRoute, enterHighlight, 
         ?.find((trip) => trip.directionId == "0")
         ?.stops || [];
       setReturnStops(returnStopsData);
+
+      onForwardReturnStops(
+        forwardStopsData[0]?.geometries.geoJson.coordinates,
+        returnStopsData[0]?.geometries.geoJson.coordinates
+      );
 
       const allNearbyRoutes = extractNearbyRoutes(forwardStopsData.concat(returnStopsData));
       setNearbyRoutes(allNearbyRoutes);

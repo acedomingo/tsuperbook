@@ -1,14 +1,18 @@
 // packages
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Map, Marker, Layer, Source } from 'react-map-gl';
-import { useLazyQuery } from '@apollo/client';
-import { NEARBY_ROUTES } from '../graphql/Queries';
+import { useLazyQuery, useQuery } from '@apollo/client';
+import { NEARBY_ROUTES, GET_STOPS } from '../graphql/Queries';
 import '../App.css';
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import RouteData from "../components/RouteData";
 import RouteInfo from '../components/RouteInfo';
 import { useLocation, useNavigate } from 'react-router-dom';
+import GpsFixed from '@mui/icons-material/GpsFixed';
+import Place from '@mui/icons-material/Place';
+import { FeatureCollection, Point } from 'geojson';
+
 
 // -----------------------------
 
@@ -64,8 +68,10 @@ function Home() {
     // Update the state with the new viewport
     setViewport(newViewport);
   };
-
+  
+  const mapRef = useRef(null);
   const quezonCityBoundingBox = [[121.01869583129883,14.604514925547997],[121.090736203863,14.694524072088583]];
+  const [enableStops, setEnableStops] = useState(false);
   
   // ---------------- Nearby routes function -------------------------
 
@@ -83,6 +89,8 @@ function Home() {
   const [showInfo, setShowInfo] = useState(false);
   const [selectGeometry, setSelectGeometry] = useState(null);
   const [selectedRoute, setSelectedRoute] = useState(null);
+  const [selectedStop, setSelectedStop] = useState(null);
+  const [selectedStopId, setSelectedStopId] = useState(null);
 
   useEffect(() => {
     setShowInfo(false);
@@ -92,6 +100,8 @@ function Home() {
       setShowPopup(false);
       setSelectGeometry(routeDataMap["LTFRB_"+selectedRoute.id]);      
       setShowInfo(false);
+      setSelectedStop(null);
+      setSelectedStopId(null);
       setShowInfo(true);
     } 
     else {
@@ -113,6 +123,25 @@ function Home() {
     }
   }, [selectRouteParam])
 
+  const { loading: stopsLoading, error: stopsError, data: stopsData } = useQuery(GET_STOPS);
+
+  const getStopsGeoJson = (stopsData) => {
+    const features = stopsData?.stopsByBbox?.map((stop) => ({
+      type: 'Feature',
+      geometry: stop.geometries.geoJson,
+      properties: {
+        gtfsId: stop.gtfsId,
+        name: stop.name,
+        routes: stop.routes.map((route) => route.longName),
+      },
+    }));
+
+    return {
+      type: 'FeatureCollection',
+      features: features || [],
+    };
+  };
+
   const [getNearbyRoutes, { loading, error, data }] = useLazyQuery(NEARBY_ROUTES, {variables: {lat: latitude, lon: longitude}});
   
   const allRoutes = data?.stopsByRadius?.edges?.flatMap((edge) => edge?.node?.stop?.routes) || [];   
@@ -129,10 +158,21 @@ function Home() {
   async function handleClick(event) { // on double click
     setShowPopup(true);
     setSelectedRoute(null);
+    setSelectedStop(null);
+    setSelectedStopId(null);
+
     const coords = event.lngLat; // gets the coordinates of clicked location
     setLongitude(coords.lng);
     setLatitude(coords.lat);
     await getNearbyRoutes() // requests query
+
+    if (mapRef.current) {
+      mapRef.current.getMap().flyTo({
+        center: [coords.lng, coords.lat],
+        zoom: 15,
+        duration: 2000,
+      });
+    }
   }
 
   const handleListItemClick = (route) => { // Get the RouteData item that matches the route name.
@@ -153,6 +193,33 @@ function Home() {
   };
   
   // -----------------------------------------------------------
+
+  const handleStopClick = (event) => {
+    setShowPopup(false);
+    setShowInfo(false);
+    setSelectedRoute(null);
+    const features = event.features;
+  
+    if (features && features.length > 0) {
+      const selectedStop = features[0].properties;
+  
+      // Update the viewport to fly to the clicked stop
+      if (mapRef.current) {
+        mapRef.current.getMap().flyTo({
+          center: [
+            selectedStop.geometries.geoJson.coordinates[0],
+            selectedStop.geometries.geoJson.coordinates[1],
+          ],
+          zoom: 15,
+          duration: 2000,
+        });
+      }
+  
+      setSelectedStop(selectedStop);
+      setSelectedStopId(selectedStop.gtfsId); 
+    }
+  };
+
   
   const handleRouteNameMouseEnter = (route) => { // when a nearby route is hovered, the route is highlighted on the map
     try {
@@ -175,6 +242,8 @@ function Home() {
     setShowPopup(false);
     setShowInfo(false);
     setSelectedRoute(null);
+    setSelectedStop(null);
+    setSelectedStopId(null);
 
     const newSearch = new URLSearchParams(location.search);
     newSearch.delete('selectRoute');
@@ -185,12 +254,18 @@ function Home() {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
+  const handleStopToggle = () => {
+    setEnableStops(!enableStops);
+  }
+
   const recenterMap = () => {
-    setViewport({
-      longitude: 121.04042520880047,
-      latitude: 14.649743779882588,
-      zoom: 14,
-    });
+    if (mapRef.current) {
+      mapRef.current.getMap().flyTo({
+        center: [121.04042520880047, 14.649743779882588],
+        zoom: 14,
+        duration: 2000, // Set the duration of the flyTo animation in milliseconds
+      });
+    }
   };
 
   return (
@@ -206,6 +281,7 @@ function Home() {
     <Map
       id="map"
       {...settings}
+      ref={mapRef}
       style={{ width: '100vw', height: '100vh' }}
       initialViewState={viewport}
       onViewportChange={handleViewportChange}
@@ -265,6 +341,39 @@ function Home() {
                 }} />
         </Source>
       )}
+
+      {enableStops && stopsData && (
+        <>
+          {stopsData.stopsByBbox.map((stop) => (
+            <Marker
+              key={stop.gtfsId}
+              longitude={stop.geometries.geoJson.coordinates[0]}
+              latitude={stop.geometries.geoJson.coordinates[1]}
+            >
+              <div
+                style={{
+                  width: '12px',
+                  height: '12px',
+                  borderRadius: '50%',
+                  backgroundColor: selectedStopId === stop.gtfsId ? '#FF2400' : '#FFC133',
+                  cursor: 'pointer',
+                  border: '2px solid #000',
+                  transition: 'background-color 0.3s ease', // Add transition for smooth color change
+                }}
+                onClick={() => handleStopClick({ features: [{ properties: stop }] })}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = '#FF2400'; // Change background color on hover
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor =
+                    selectedStopId === stop.gtfsId ? '#FF2400' : '#FFC133'; // Change back to original color on hover out
+                }}
+              />
+            </Marker>
+          ))}
+        </>
+      )}
+      
     </Map>
     </div>
     </div>
@@ -273,30 +382,37 @@ function Home() {
     {showPopup && (
       <div className="popup">
         <button className="close-button" onClick={handleClosePopup}> X </button>
-        <h1>Nearby Routes:</h1>
-        { loading ? (<p>Fetching nearby routes....</p>) : (null)}
-        { error ? (<p>Failed to fetch routes...</p>) : (null)}
-        {routes.length <= 0 && !loading ? (
-          <p>There are no nearby routes.</p>
-         ) : (
-          <ul>         
-            {routes.map((route) => (
-              <li
-                key={route.gtfsId}
-                className="routeName"
-                onClick={() => handleListItemClick(route)}
-                onMouseEnter={() => handleRouteNameMouseEnter(route)}
-                onMouseLeave={handleRouteNameMouseLeave}
-              >
-              {route.longName}
-              </li>
-          ))}
-          </ul>
-        )}                                
+        { loading ? (<p>Fetching nearby routes....</p>) : (
+          <>
+            <h1>Nearby Routes:</h1>
+            { error ? (<p>Failed to fetch routes...</p>) : (
+              <>
+                {routes.length <= 0 && !loading ? (
+                  <p>There are no nearby routes.</p>
+                ) : (
+                  <ul>         
+                    {routes.map((route) => (
+                      <li
+                        key={route.gtfsId}
+                        className="routeName"
+                        onClick={() => handleListItemClick(route)}
+                        onMouseEnter={() => handleRouteNameMouseEnter(route)}
+                        onMouseLeave={handleRouteNameMouseLeave}
+                      >
+                      {route.longName}
+                      </li>
+                  ))}
+                  </ul>  
+                  )}
+                </>
+              )}
+          </> 
+        )}                         
       </div>
     )} 
 
-    <button className="recenter-button" onClick={recenterMap}>Recenter Map</button>
+    <button className='recenter-button' onClick={recenterMap}><GpsFixed /></button>
+    <button className='recenter-button' style={{left: '5vw'}} onClick={handleStopToggle}><Place /></button>
 
     {showInfo && (
       <RouteInfo
@@ -305,7 +421,35 @@ function Home() {
       differentRoute={handleListItemClick}
       enterHighlight={handleRouteNameMouseEnter}
       exitHighlight={handleRouteNameMouseLeave}
-      />    )}
+      />)}
+
+      {selectedStop && (
+        <div className="popup">
+          <button className="close-button" onClick={handleClosePopup}> X </button>
+          <h2>{selectedStop.name}</h2>
+          {selectedStop.routes && selectedStop.routes.length > 0 ? (
+            <>
+              <h3>Routes:</h3>
+              <ul>
+                {selectedStop.routes.map((route) => (
+                  <li
+                  key={route.gtfsId}
+                  className="routeName"
+                  onClick={() => handleListItemClick(route)}
+                  onMouseEnter={() => handleRouteNameMouseEnter(route)}
+                  onMouseLeave={handleRouteNameMouseLeave}
+                  >
+                  {route.longName}
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            <p>No routes pass through this stop.</p>
+          )}
+        </div>
+      )}
+
     </>
   );
 }

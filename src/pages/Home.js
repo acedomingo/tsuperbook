@@ -1,5 +1,5 @@
 // packages
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Map, Marker, Layer, Source } from 'react-map-gl';
 import { useLazyQuery, useQuery } from '@apollo/client';
 import { NEARBY_ROUTES, GET_STOPS } from '../graphql/Queries';

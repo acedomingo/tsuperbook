@@ -44,6 +44,26 @@ query nearbyRoutes($lat: Float!, $lon: Float!) {
 }
 `
 
+export const GET_STOPS = gql `
+query {
+  stopsByBbox(
+    minLat:14.604514925547997, 
+    minLon:121.01869583129883, 
+    maxLat:14.694524072088583, 
+    maxLon:121.090736203863,) {
+    gtfsId
+    name
+    geometries {
+      geoJson
+    }
+    routes{
+      longName
+      gtfsId
+    }
+  }
+}
+`
+
 export const TRIP_PLANNING = gql `
 query planTrip($origin: String, $destination: String){
   plan(

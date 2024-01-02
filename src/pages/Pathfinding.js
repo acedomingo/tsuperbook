@@ -1,5 +1,5 @@
 // packages
-import React, { useState, useEffect  } from 'react';
+import React, { useState, useEffect, useRef  } from 'react';
 import { Map, Layer, Source, Marker } from 'react-map-gl';
 import { useLazyQuery } from '@apollo/client';
 import { TRIP_PLANNING } from '../graphql/Queries';
@@ -9,6 +9,8 @@ import '../App.css';
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import polyline from '@mapbox/polyline';
+import GpsFixed from '@mui/icons-material/GpsFixed';
+
 
 // -----------------------------
 
@@ -24,7 +26,8 @@ const PathFinding = () => {
         dragRotate: false
     });
 
-    const quezonCityBoundingBox = [[121.01869583129883,14.604514925547997],[121.090736203863,14.694524072088583]];
+    const quezonCityBoundingBox = [[120.97886149595988,14.593721268264154],[121.14790355785914,14.777687035029965]];
+    const mapRef = useRef(null);
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const handleSidebarToggle = () => { // toggles sidebar
@@ -60,31 +63,48 @@ const PathFinding = () => {
 
     useEffect(() => {
       // Process leg geometries when data is available
-      if (data && data.plan && data.plan.itineraries  && data.plan.itineraries.length > 0) {
+      if (data && data.plan && data.plan.itineraries && data.plan.itineraries.length > 0) {
         const legs = data.plan.itineraries[0].legs || [];
-
+    
         if (legs.length > 1) {
-
-        const newLegGeometries = [];
-  
-        legs.forEach((leg, index) => {
-          const geometryPoints = leg.legGeometry.points;
-          const coordinates = polyline.decode(geometryPoints).map((point) => [point[1], point[0]]);
-          const originCoords = [leg.from.lon, leg.from.lat];
-          const destinationCoords = [leg.to.lon, leg.to.lat];
-  
-          newLegGeometries.push({
-            coordinates,
-            highlighted: index === currentLegIndex,
-            originCoords,
-            destinationCoords,
+          const newLegGeometries = [];
+    
+          legs.forEach((leg, index) => {
+            const geometryPoints = leg.legGeometry.points;
+            const coordinates = polyline.decode(geometryPoints).map((point) => [point[1], point[0]]);
+            const originCoords = [leg.from.lon, leg.from.lat];
+            const destinationCoords = [leg.to.lon, leg.to.lat];
+    
+            newLegGeometries.push({
+              coordinates,
+              highlighted: index === currentLegIndex,
+              originCoords,
+              destinationCoords,
+            });
           });
-        });
-  
-        setLegGeometries(newLegGeometries);
+    
+          setLegGeometries(newLegGeometries);
+    
+          // Use fitBounds directly on the mapRef outside the loop
+          const { originCoords, destinationCoords } = newLegGeometries[currentLegIndex];
+          const minLat = Math.min(originCoords[1], destinationCoords[1]);
+          const maxLat = Math.max(originCoords[1], destinationCoords[1]);
+    
+          const legBounds = [
+            [Math.min(originCoords[0], destinationCoords[0]), minLat],
+            [Math.max(originCoords[0], destinationCoords[0]), maxLat],
+          ];
+    
+          if (mapRef && mapRef.current) {
+            mapRef.current.getMap().fitBounds(legBounds, {
+              padding: 20,
+              duration: 1000,
+            });
+          }
         }
       }
-    }, [data, currentLegIndex]);
+    }, [data, currentLegIndex, mapRef]);
+    
   
 
     function findPath() {
@@ -130,6 +150,31 @@ const PathFinding = () => {
         setCurrentLegIndex((prevIndex) => (prevIndex > 0 ? prevIndex - 1 : prevIndex));
     };
 
+    const recenterMap = () => {
+      if (origin && destination && mapRef.current) {
+        // Convert coordinates to floating-point numbers
+        const originLat = parseFloat(origin.coordinates.split(',')[0]);
+        const originLon = parseFloat(origin.coordinates.split(',')[1]);
+        const destLat = parseFloat(destination.coordinates.split(',')[0]);
+        const destLon = parseFloat(destination.coordinates.split(',')[1]);
+    
+        // Ensure latitude values are within the valid range
+        const minLat = Math.min(originLat, destLat);
+        const maxLat = Math.max(originLat, destLat);
+
+        const bounds = [
+          [Math.min(originLon, destLon), minLat],
+          [Math.max(originLon, destLon), maxLat],
+        ];
+
+        console.log(bounds);
+    
+        mapRef.current.getMap().fitBounds(bounds, {
+          padding: 20,
+          duration: 1000,
+        });
+      }
+    };
 
     return (
     <>
@@ -153,6 +198,7 @@ const PathFinding = () => {
             mapboxAccessToken="pk.eyJ1IjoiYWNlZG9taW5nbyIsImEiOiJjbGpvOTB3ZjMwMWFiM2dxbDc5cjU0Y2FvIn0.aJC6z1-KjLBiG15MUfzO4Q"
             mapStyle="mapbox://styles/mapbox/streets-v12"
             maxBounds={quezonCityBoundingBox}
+            ref={mapRef}
             >
            {itineraryOpen && (
             <>
@@ -296,6 +342,9 @@ const PathFinding = () => {
         }
         
     </div>
+
+    <button className='recenter-button' onClick={recenterMap}><GpsFixed /></button>
+
     </>
     );
 };

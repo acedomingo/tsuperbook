@@ -13,16 +13,23 @@ export const GET_ROUTES = gql `
 export const ROUTE_DETAILS = gql `
 # Gets more details on each transit route
 query Route($route_id: String!){
-    route(id:$route_id) {
-        longName
-        stops {
-            name
-            routes {
-                gtfsId
-                longName
-            }
-        }
+  route(id:$route_id) {
+    longName
+    trips {
+      directionId
+      stops {
+      name
+      gtfsId
+      routes {
+        gtfsId
+        longName 
+      }
+      geometries{
+        geoJson
+      }
     }
+    }
+  }
 }
 `
 

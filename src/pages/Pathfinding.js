@@ -63,7 +63,7 @@ const PathFinding = () => {
 
     useEffect(() => {
       // Process leg geometries when data is available
-      if (data && data.plan && data.plan.itineraries && data.plan.itineraries.length > 0) {
+      if (data && data.plan && data.plan.itineraries && data.plan.itineraries.length > 0 && data.plan.itineraries[0].legs.length > 1) {
         setNoItineraries(false);
         const legs = data.plan.itineraries[0].legs || [];
     
@@ -136,6 +136,9 @@ const PathFinding = () => {
       setItineraryOpen(false);
       setAskOpen(true);
       setCurrentLegIndex(0);
+      setLegGeometries(null);
+      setOrigin(null);
+      setDestination(null);
     }
 
     const handleOriginSelected = (location) => {
@@ -204,7 +207,7 @@ const PathFinding = () => {
             maxBounds={quezonCityBoundingBox}
             ref={mapRef}
             >
-           {itineraryOpen && (
+           {itineraryOpen && legGeometries && (
             <>
               {/* Your existing components and code */}
               {legGeometries.map(({ coordinates, highlighted, originCoords, destinationCoords }, index) => (

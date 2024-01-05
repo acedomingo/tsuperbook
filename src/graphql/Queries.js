@@ -54,10 +54,10 @@ query nearbyRoutes($lat: Float!, $lon: Float!) {
 export const GET_STOPS = gql `
 query {
   stopsByBbox(
-    minLat:14.604514925547997, 
-    minLon:121.01869583129883, 
-    maxLat:14.694524072088583, 
-    maxLon:121.090736203863,) {
+    minLat:14.614040565316524, 
+    minLon:120.99219090810487, 
+    maxLat:14.69225279523503, 
+    maxLon:121.09479316188072,) {
     gtfsId
     name
     geometries {

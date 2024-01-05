@@ -162,7 +162,6 @@ function Home() {
     const coords = event.lngLat; // gets the coordinates of clicked location
     setLongitude(coords.lng);
     setLatitude(coords.lat);
-    await getNearbyRoutes() // requests query
 
     if (mapRef.current) {
       mapRef.current.getMap().flyTo({
@@ -171,6 +170,9 @@ function Home() {
         duration: 2000,
       });
     }
+
+    await getNearbyRoutes() // requests query
+
   }
 
   const handleListItemClick = (route) => { // Get the RouteData item that matches the route name.
@@ -191,6 +193,8 @@ function Home() {
 
     // Refresh RouteInfo popup and scroll to the top
     setShowInfo(false);
+    setEnableStops(true);
+
     setTimeout(() => {
       setShowInfo(true);
       const routeInfoPopup = document.getElementById('routeInfoPopup');
@@ -234,20 +238,6 @@ function Home() {
 
   const unhighlightStop = () => {
     setSelectedStopId(null);
-    if (forwardStopCoords && returnStopCoords && mapRef.current) {
-      const minLat = Math.min(forwardStopCoords[1], returnStopCoords[1]);
-      const maxLat = Math.max(forwardStopCoords[1], returnStopCoords[1]);
-
-      const bounds = [
-        [Math.min(forwardStopCoords[0] - 0.007, returnStopCoords[0]), minLat  - 0.007],
-        [Math.max(forwardStopCoords[0] + 0.007, returnStopCoords[0]), maxLat + 0.007],
-      ];
-
-      mapRef.current.getMap().fitBounds(bounds, {
-        padding: 20,
-        duration: 1000,
-      });
-    }
   };
 
   const handleForwardReturnStops = (forwardStops, returnStops) => {
@@ -314,7 +304,31 @@ function Home() {
   }
 
   const recenterMap = () => {
-    if (mapRef.current) {
+    
+    if (selectedRoute) {
+      if (forwardStopCoords && returnStopCoords && mapRef.current) {
+        const minLat = Math.min(forwardStopCoords[1], returnStopCoords[1]);
+        const maxLat = Math.max(forwardStopCoords[1], returnStopCoords[1]);
+  
+        const bounds = [
+          [Math.min(forwardStopCoords[0] - 0.007, returnStopCoords[0]), minLat  - 0.007],
+          [Math.max(forwardStopCoords[0] + 0.007, returnStopCoords[0]), maxLat + 0.007],
+        ];
+  
+        mapRef.current.getMap().fitBounds(bounds, {
+          padding: 20,
+          duration: 1000,
+        });
+      }
+    } else if (showPopup) {
+      mapRef.current.getMap().flyTo({
+        center: [longitude, latitude],
+        zoom: 15,
+        duration: 2000,
+      });      
+    } else if (selectedStop) {
+      flyToSelectStop(selectedStop);
+    } else {
       mapRef.current.getMap().flyTo({
         center: [121.04042520880047, 14.649743779882588],
         zoom: 14.8,

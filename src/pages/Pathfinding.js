@@ -64,6 +64,7 @@ const PathFinding = () => {
     useEffect(() => {
       // Process leg geometries when data is available
       if (data && data.plan && data.plan.itineraries && data.plan.itineraries.length > 0) {
+        setNoItineraries(false);
         const legs = data.plan.itineraries[0].legs || [];
     
         if (legs.length > 1) {
@@ -102,6 +103,9 @@ const PathFinding = () => {
             });
           }
         }
+      } else {
+        console.log("NO LEGS");
+        setNoItineraries(true);
       }
     }, [data, currentLegIndex, mapRef]);
     
@@ -280,40 +284,36 @@ const PathFinding = () => {
           <div className="itinerary">
             <Link to="/" className="close-button" style={{textDecoration: 'none', right:'0px'}}> X </Link>
             <div>
-              {data.plan.itineraries.map((itinerary, index) => (
-                <div key={index}>
-                  <h2>Your Trip</h2>
-                  {itinerary.legs.length <= 1 ? (
-                    <>
-                    <p>No itineraries found</p>
-                   
-                    </>
-                  ) : (
-                    <>
-                      {itinerary.legs.map((leg, legIndex) => (
-                        <>
-                          {/* Only display the current leg */}
-                          {legIndex === currentLegIndex && (
-                            <>
-                              {leg.mode === 'WALK' ? (
-                                <p>Mode: WALK</p>
-                              ) : (
-                                <>
-                                  <Link className='routeName' to={`/?selectRoute=${encodeURIComponent(String(leg.route.longName))}`}>
-                                    <p>Route: {leg.route.longName}</p>
-                                  </Link>
-                                  <p>Mode: {leg.route.gtfsId.includes('PUJ') ? 'Jeepney' : 'Bus'}</p>
-                                </>
-                              )}
+              {noItineraries || data.plan.itineraries.length === 0 ? (
+                <p>No itineraries found</p>
+              ) : (
+                data.plan.itineraries.map((itinerary, index) => (
+                  <div key={index}>
+                    <h2>Your Trip</h2>
+                    {itinerary.legs.map((leg, legIndex) => (
+                      <>
+                        {/* Only display the current leg */}
+                        {legIndex === currentLegIndex && (
+                          <>
+                            {leg.mode === 'WALK' ? (
+                              <p>Mode: WALK</p>
+                            ) : (
+                              <>
+                                <Link className='routeName' to={`/?selectRoute=${encodeURIComponent(String(leg.route.longName))}`}>
+                                  <p>Route: {leg.route.longName}</p>
+                                </Link>
+                                <p>Mode: {leg.route.gtfsId.includes('PUJ') ? 'Jeepney' : 'Bus'}</p>
+                              </>
+                            )}
 
-                              <p>Distance: {leg.distance}</p>
-                              <p>From: {leg.from.name === 'Origin' ? origin.place_name : leg.from.name}</p>
-                              <p>To: {leg.to.name === 'Destination' ? destination.place_name : leg.to.name}</p>
-                            </>
-                          )}
-                        </>
-                      ))}
-                     <div className="page-info">
+                            <p>Distance: {leg.distance}</p>
+                            <p>From: {leg.from.name === 'Origin' ? origin.place_name : leg.from.name}</p>
+                            <p>To: {leg.to.name === 'Destination' ? destination.place_name : leg.to.name}</p>
+                          </>
+                        )}
+                      </>
+                    ))}
+                    <div className="page-info">
                       <button className='arrow' onClick={handlePreviousLeg} disabled={currentLegIndex === 0}>
                         ←
                       </button>
@@ -322,11 +322,10 @@ const PathFinding = () => {
                         →
                       </button>
                     </div>
-                    </>
-                  )}
-                </div>
-              ))}
-               <button onClick={planAnotherTrip} className='findButton' style={{textDecoration: 'none', position: 'relative', top: 5 }}> Plan another trip </button>
+                  </div>
+                ))
+              )}
+              <button onClick={planAnotherTrip} className='findButton' style={{textDecoration: 'none', position: 'relative', top: 5 }}> Plan another trip </button>
             </div>
           </div>
         )}

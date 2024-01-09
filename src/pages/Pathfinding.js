@@ -139,6 +139,7 @@ const PathFinding = () => {
       setLegGeometries(null);
       setOrigin(null);
       setDestination(null);
+      setNoItineraries(false);
     }
 
     const handleOriginSelected = (location) => {
@@ -207,7 +208,7 @@ const PathFinding = () => {
             maxBounds={quezonCityBoundingBox}
             ref={mapRef}
             >
-           {itineraryOpen && legGeometries && (
+           {itineraryOpen && legGeometries && !noItineraries && (
             <>
               {/* Your existing components and code */}
               {legGeometries.map(({ coordinates, highlighted, originCoords, destinationCoords }, index) => (

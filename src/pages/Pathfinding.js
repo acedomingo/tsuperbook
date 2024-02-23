@@ -63,7 +63,7 @@ const PathFinding = () => {
 
     useEffect(() => {
       // Process leg geometries when data is available
-      if (data && data.plan && data.plan.itineraries && data.plan.itineraries.length > 0 && data.plan.itineraries[0].legs.length > 1) {
+      if (data && data.plan && data.plan.itineraries && data.plan.itineraries.length > 0 && data.plan.itineraries[0].legs.length > 1 && !noItineraries) {
         setNoItineraries(false);
         const legs = data.plan.itineraries[0].legs || [];
     
@@ -112,6 +112,7 @@ const PathFinding = () => {
   
 
     function findPath() {
+      setNoItineraries(false);
         if (origin && destination) {
             console.log("From:", origin.coordinates, "\nTo:", destination.coordinates);
 
@@ -139,7 +140,6 @@ const PathFinding = () => {
       setLegGeometries(null);
       setOrigin(null);
       setDestination(null);
-      setNoItineraries(false);
     }
 
     const handleOriginSelected = (location) => {
